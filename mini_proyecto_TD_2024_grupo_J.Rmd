@@ -1,0 +1,34 @@
+---
+title: "Mini Proyecto TD 2024"
+subtitle: "Entrega parcial"
+author: |
+  Víctor Álvarez Palomares,  
+  Belén Gallego Andreu,  
+  Sergio Martínez Yagüe,  
+  Ferran Medina Mompó,  
+  Carles Pascual i Sivera,  
+  y Úrsula Casaus Fabra
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introducción
+
+
+
+## Importación de los datos
+
+```{r}
+# Para extraer los datos de los ficheros .pdf, hay que pasarlos a .txt:
+
+
+
+
+```
+
