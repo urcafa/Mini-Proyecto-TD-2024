@@ -26,36 +26,28 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 # Para extraer los datos de los ficheros .pdf, hay que pasarlos a .txt:
-library(pacman)
-
-
-productos<-a[8:(length(b)-14)]
-productos
-df<-data.frame(productos=productos )
 
 
 
-df <- df %>%
-  mutate(unidades = as.numeric(str_extract(productos, "\\d+"))) %>%
-  mutate(precio = (substr(productos, nchar(productos) - 3, nchar(productos))),
-         productos = sub("^\\d+", "", productos)) 
-df
+
 
 
 ```
 
 ```{r}
+#Esta funcion separa los productos de los tickets en tres columnas, unidades, producto y precio.
 library(pacman)
-p_load(dplyr,lubridate, tidyr, readr, stringr)
+p_load(dplyr, stringr)
 
 
 separar <- function(a) {
-  productos<-a[8:(length(a)-13)]
-  df<-data.frame(productos=productos )
+  a <- iconv(a, to = "UTF-8")#Esta linea hace que no de error al leer caracteres especiales
+  productos<-a[8:(length(a)-13)]#Selecciono solo las filas con productos y creo un df
+  df<-data.frame(producto=productos )
   df <- df %>%
-  mutate(unidades = as.numeric(str_extract(productos, "\\d+"))) %>%
-  mutate(precio = (substr(productos, nchar(productos) - 3, nchar(productos))),
-         productos = sub("^\\d+", "", productos)) 
+  mutate(unidades = as.numeric(str_extract(producto, "\\d+"))) %>%#Selecciono el numero de unidades y hago una columna
+  mutate(precio = (substr(producto, nchar(producto) - 3, nchar(producto))),#Selecciono el precio y hago una columna
+         producto = sub("^\\d+", "", producto)) #Borro las unidades de la columna original
   return(df)
 }
 
@@ -64,14 +56,22 @@ a<-read_lines("./data/20231218 Mercadona 60,47 Ôé¼.txt")
 b<-read_lines("./data/20231224 Mercadona 37,49 Ôé¼.txt")
 c<-read_lines("./data/20231226 Mercadona 25,83 Ôé¼.txt")
 d<-read_lines("./data/20231230 Mercadona 66,30 Ôé¼.txt")
-f<-read_lines("./data/20240102 Mercadona 70,04 Ôé¼.txt")
-g<-read_lines("./data/20240108 Mercadona 83,73 Ôé¼.txt")
-h<-read_lines("./data/20240109 Mercadona 7,35 Ôé¼.txt")
+e<-read_lines("./data/20240102 Mercadona 70,04 Ôé¼.txt")
+f<-read_lines("./data/20240108 Mercadona 83,73 Ôé¼.txt")
+g<-read_lines("./data/20240109 Mercadona 7,35 Ôé¼.txt")
 
 
 separar(a)
 separar(b)
-#Solo funciona para los dos primeros, los demas tienen caracteres especiales como \ y dan error
+separar(c)
+separar(d)
+separar(e)
+separar(f)
+separar(g)
+#Cuando hay algun caracter especial como \ o -, sustituye esa fila por NAs, ademas 
+#no funciona para las frutas porque estan en otro formato distinto.
+#Tambien falta borrar el precio de la columna productos
+
 
 ```
 
