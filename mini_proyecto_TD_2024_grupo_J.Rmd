@@ -63,6 +63,28 @@ separar <- function(a) {
   return(df)
 }
 
+extraer_informacion <- function(archivo) {
+  # Leemos el texto desde el archivo
+  texto <- readLines(archivo, encoding = "UTF-8")
+
+  # Extraemos la fecha y la hora
+  fecha_hora <- substr(texto[5], 1, 16)
+
+  # Como esta información se encuentra en la misma línea de texto la separamos
+  fecha <- substr(fecha_hora, 1, 10)
+  hora <- substr(fecha_hora, 12, 16)
+
+  # Extraemos la calle
+  calle <- grep("C\\/\\s.*\\s\\d+", texto, value = TRUE)
+  if (length(calle) == 0) {
+    calle <- "Dirección no encontrada"
+  }
+
+  # Creamos el data frame
+  df <- data.frame(Fecha = fecha, Hora = hora, Calle = calle)
+  
+  return(df)
+}
 
 a <- readLines("./data/20231218 Mercadona 60,47 Ôé¼.txt")
 b <- readLines("./data/20231224 Mercadona 37,49 Ôé¼.txt")
@@ -84,6 +106,21 @@ ticket_g <- separar(g)
 # Cuando hay algún caracter especial como \ o -, sustituye esa fila por NAs,
 # además no funciona para las frutas porque estan en otro formato distinto.
 # También falta borrar el precio de la columna productos.
+
+ticket_a2 <- extraer_informacion("./data/20231218 Mercadona 60,47 Ôé¼.txt")
+ticket_b2 <- extraer_informacion("./data/20231224 Mercadona 37,49 Ôé¼.txt")
+ticket_c2 <- extraer_informacion("./data/20231226 Mercadona 25,83 Ôé¼.txt")
+ticket_c2 <- extraer_informacion("./data/20231230 Mercadona 66,30 Ôé¼.txt")
+ticket_d2 <- extraer_informacion("./data/20240102 Mercadona 70,04 Ôé¼.txt")
+ticket_e2 <- extraer_informacion("./data/20240108 Mercadona 83,73 Ôé¼.txt")
+ticket_f2 <- extraer_informacion("./data/20240109 Mercadona 7,35 Ôé¼.txt")
+
+#En caso de que no este especificado en el ticket alguna de esta información,
+#se indicará que no ha podido ser encontrada
+
+#Mostramos la informacion de un ticket, por ejemplo el ticket a:
+ticket_a
+ticket_a2
 ```
 
 # Preguntas
