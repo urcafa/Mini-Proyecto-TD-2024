@@ -25,10 +25,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Importación de los datos
 
 ```{r}
-# Para extraer los datos de los ficheros .pdf, hay que pasarlos a .txt:
-
-
-
-
+# Para extraer los datos de los ficheros .pdf, hay que pasarlos a .txt 
 ```
 
