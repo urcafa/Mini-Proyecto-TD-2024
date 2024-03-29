@@ -74,3 +74,18 @@ separar(g)
 # También falta borrar el precio de la columna productos.
 ```
 
+## Preguntas
+
+A continuación vamos a plantearnos diferentes cuestiones que nos podrían venir a la cabeza a la hora de hacer un análisis de los tickets de la compra. 
+
+1) ¿Qué productos son los más comprados? 
+2) ¿Cuál es el gasto medio de cada compra?
+3) ¿Qué nos podría dar a entender la frequencia de compra de cada usuario
+(compras diarias, semanales...)?
+4) ¿Qué productos se compran más según el precio de la compra?
+5) ¿Qué días hay compras más grandes?
+
+Además podríamos calcular las distribuiciones de compras por categorias de productos para saber qué tipos de productos son los más comprados. A partir de esto también podriamos obtener la distribución de gastos que hace el consumidor a la hora de realizar la compra.
+
+Asimismo, podríamos plantearnos otras cuestiones como el gasto medio de compra, o incluso si los usuarios tienden a ir en coche o a pie (depende de el tamaño de compra, o incluso comodidad)
+
