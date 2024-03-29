@@ -96,6 +96,7 @@ A continuación vamos a plantearnos diferentes cuestiones que nos podrían venir
 (compras diarias, semanales...)?
 4) ¿Qué productos se compran más según el precio de la compra?
 5) ¿Qué días hay compras más grandes?
+6)¿Qué tipo de pago es más común según el dinero gastado?
 
 Además podríamos calcular las distribuiciones de compras por categorías de productos para saber qué tipos de productos son los más comprados. A partir de esto también podríamos obtener la distribución de gastos que hace el consumidor a la hora de realizar la compra.
 
