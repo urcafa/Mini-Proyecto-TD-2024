@@ -44,24 +44,6 @@ Como ya hemos explicado previamente, hemos convertido nuestros ficheros a .txt d
 library(pacman)
 p_load(dplyr, stringr)
 
-# Esta función separa los productos de los tickets en tres columnas, unidades, 
-# producto y precio.
-
-separar <- function(a) {
-  a <- iconv(a, to = "UTF-8") # Esta línea hace que no de error al leer 
-  # caracteres especiales
-  productos<-a[8:(length(a)-13)] # Seleccionamos solo las filas con productos y 
-  # creamos un dataframe
-  df<-data.frame(producto=productos )
-  df <- df %>%
-  mutate(unidades = as.numeric(str_extract(producto, "\\d+"))) %>% 
-  # Seleccionamos el número de unidades y hacemos una columna
-  mutate(precio = (substr(producto, nchar(producto) - 3, nchar(producto))), 
-         # Seleccionamos el precio y hacemos una columna
-         producto = sub("^\\d+", "", producto)) # Borramos las unidades de la 
-  # columna original
-  return(df)
-}
 
 extraer_informacion <- function(archivo) {
   # Leemos el texto desde el archivo
@@ -86,26 +68,10 @@ extraer_informacion <- function(archivo) {
   return(df)
 }
 
-a <- readLines("./data/20231218 Mercadona 60,47 Ôé¼.txt")
-b <- readLines("./data/20231224 Mercadona 37,49 Ôé¼.txt")
-c <- readLines("./data/20231226 Mercadona 25,83 Ôé¼.txt")
-d <- readLines("./data/20231230 Mercadona 66,30 Ôé¼.txt")
-e <- readLines("./data/20240102 Mercadona 70,04 Ôé¼.txt")
-f <- readLines("./data/20240108 Mercadona 83,73 Ôé¼.txt")
-g <- readLines("./data/20240109 Mercadona 7,35 Ôé¼.txt")
 
 
-ticket_a <- separar(a)
-ticket_b <- separar(b)
-ticket_c <- separar(c)
-ticket_d <- separar(d)
-ticket_e <- separar(e)
-ticket_f <- separar(f)
-ticket_g <- separar(g)
 
-# Cuando hay algún caracter especial como \ o -, sustituye esa fila por NAs,
-# además no funciona para las frutas porque estan en otro formato distinto.
-# También falta borrar el precio de la columna productos.
+
 
 ticket_a2 <- extraer_informacion("./data/20231218 Mercadona 60,47 Ôé¼.txt")
 ticket_b2 <- extraer_informacion("./data/20231224 Mercadona 37,49 Ôé¼.txt")
@@ -119,8 +85,137 @@ ticket_f2 <- extraer_informacion("./data/20240109 Mercadona 7,35 Ôé¼.txt")
 #se indicará que no ha podido ser encontrada
 
 #Mostramos la informacion de un ticket, por ejemplo el ticket a:
-ticket_a
 ticket_a2
+```
+
+
+```{r}
+separar <- function(df) {
+  
+  
+  df <- df %>%
+    mutate(unidades = as.numeric(substr(producto, 1,1))) %>% 
+    # Seleccionamos el número de unidades y hacemos una columna
+    mutate(precio_completo =  (substr(producto, nchar(producto) - 3, nchar(producto))), 
+           # Seleccionamos el precio y hacemos una columna
+           producto = substr(producto, 2, nchar(producto)-4))
+           # Borramos las unidades de la columna original
+  
+  df$precio_completo<- gsub(",", ".", df$precio_completo)
+  df$precio_completo <- as.numeric(df$precio_completo)
+  #Sustituyo comas por puntos y paso a numerico el precio
+  
+  df<- df %>% 
+    mutate(precio_individual=precio_completo/unidades)
+  #Obtengo el precio por unidad a partir del precio completo y las unidades
+  
+  return(df)
+}
+
+```
+
+
+
+
+```{r}
+
+
+arreglar_fruta<- function(fruta){
+  #El argumento es un vector con varias frutas y su peso y precio
+  
+  precios <- fruta[seq_along(fruta) %% 2 == 0]  
+  frutas <- fruta[seq_along(fruta) %% 2 != 0] 
+  df<-data.frame(frutas=frutas,  precios=precios)
+  #Separo el vector en dos y creo un dataframe
+  
+  
+  df<- df %>%
+    mutate(unidades = as.numeric(substr(frutas, 1,1)),
+           # Seleccionamos el número de unidades y hacemos una columna
+           frutas=substr(frutas,2, nchar(frutas)),
+           # Borro el número de unidades de la columna
+           peso_kg=substr(precios,1,nchar(precios)-20)) %>%
+    #Obtengo el peso de la columna precios y creo una columna
+    mutate(precio_por_kg=substr(precios,10,14)) %>%
+    #Obtengo el pprecio por kgeso de la columna precios y creo una columna
+    mutate(precios=substr(precios,nchar(precios)-4,nchar(precios)))
+  #Selecciono unicamente el precio de la columna precios
+  
+  return(df)
+}
+
+```
+
+
+
+```{r}
+
+
+
+detectar_fruta <- function(a){
+  texto <-  suppressWarnings(readLines(a, encoding = "latin1"))
+  #Con UTF-8 daba error en algunos caracteres
+  
+  productos<-texto[8:(length(texto)-11)]
+  # Seleccionamos solo las filas con productos y creamos un dataframe
+
+  while (!grepl("^\\d", tail(productos, 1))) {
+    productos <- productos[-length(productos)]
+  }
+  #Para asegurarme de incluir todos los productos selecciono lineas de mas y 
+  #borro las sobrantes en este bucle
+  
+  
+  
+  df<-data.frame(producto=productos )
+  
+  indices <-c()
+
+  for (i in productos){
+    idx<-str_detect(i, "^[0-9]{1,3},[0-9]{3}")
+    indices <- append(indices, idx)
+    
+  }
+  ind_frut <- which(indices)
+  #Detecto los indices de las frutas
+  
+  frutas<-c()
+  for (i in ind_frut){
+    frutas <- rbind(frutas, df[(i-1), ])
+    frutas <- rbind(frutas, df[i, ])
+
+  }  
+  #Creo un vector con las frutas y sus precios
+  
+  
+  for (i in ind_frut){
+    df <- subset(df, row.names(df) != i)
+    df <- subset(df, row.names(df) != i-1)
+  }  
+  #Quito las frutas del dataframe
+  
+  
+  df_productos<-separar(df)
+  
+  df_frutas<-arreglar_fruta(frutas)
+  
+  return(list(df_productos,df_frutas))
+  #Devuelve un dataframe con producos y otro con las frutas
+
+}
+ticket_a <- detectar_fruta("./data/20231218 Mercadona 60,47 Ôé¼.txt")
+ticket_b <- detectar_fruta("./data/20231224 Mercadona 37,49 Ôé¼.txt")
+ticket_c <- detectar_fruta("./data/20231226 Mercadona 25,83 Ôé¼.txt")
+ticket_d <- detectar_fruta("./data/20231230 Mercadona 66,30 Ôé¼.txt")
+ticket_e <- detectar_fruta("./data/20240102 Mercadona 70,04 Ôé¼.txt")
+ticket_f <- detectar_fruta("./data/20240108 Mercadona 83,73 Ôé¼.txt")
+ticket_g <- detectar_fruta("./data/20240109 Mercadona 7,35 Ôé¼.txt")
+
+
+ticket_a
+ticket_b[1]
+ticket_b[2]
+
 ```
 
 # Preguntas
