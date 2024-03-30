@@ -114,11 +114,13 @@ ticket_c2 <- extraer_informacion("./data/20231230 Mercadona 66,30 Ôé¼.txt")
 ticket_d2 <- extraer_informacion("./data/20240102 Mercadona 70,04 Ôé¼.txt")
 ticket_e2 <- extraer_informacion("./data/20240108 Mercadona 83,73 Ôé¼.txt")
 ticket_f2 <- extraer_informacion("./data/20240109 Mercadona 7,35 Ôé¼.txt")
+ticket_g2 <- extraer_informacion("./data/20240109 Mercadona 7,35 Ôé¼.txt")
 
-#En caso de que no este especificado en el ticket alguna de esta información,
-#se indicará que no ha podido ser encontrada
+# En caso de que no esté especificado en el ticket alguna de esta información,
+# se indicará que no ha podido ser encontrada
 
-#Mostramos la informacion de un ticket, por ejemplo el ticket a:
+# Mostramos la informacion de un ticket, por ejemplo el ticket a:
+
 ticket_a
 ticket_a2
 ```
@@ -133,9 +135,9 @@ A continuación vamos a plantearnos diferentes cuestiones que nos podrían venir
 (compras diarias, semanales...)?
 4) ¿Qué productos se compran más según el precio de la compra?
 5) ¿Qué días hay compras más grandes?
-6)¿Qué tipo de pago es más común según el dinero gastado?
+6) ¿Qué tipo de pago es más común según el dinero gastado?
 7) ¿Cuántos productos se compran de media en una compra?
-8) ¿Hay algún patrón de compra según la estacion del año?
+8) ¿Hay algún patrón de compra según la estación del año?
 
 Además podríamos calcular las distribuiciones de compras por categorías de productos para saber qué tipos de productos son los más comprados. A partir de esto también podríamos obtener la distribución de gastos que hace el consumidor a la hora de realizar la compra.
 
