@@ -89,11 +89,9 @@ ticket_g2 <- extraer_informacion("./data/20240109 Mercadona 7,35 Ôé¼.txt")
 
 
 #Mostramos la informacion de un ticket, por ejemplo el ticket a:
-
+ticket_a
 ticket_a2
 ```
-
-
 ```{r}
 separar <- function(df) {
   
