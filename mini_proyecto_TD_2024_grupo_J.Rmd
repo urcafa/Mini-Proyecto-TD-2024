@@ -68,11 +68,6 @@ extraer_informacion <- function(archivo) {
   return(df)
 }
 
-
-
-
-
-
 ticket_a2 <- extraer_informacion("./data/20231218 Mercadona 60,47 Ôé¼.txt")
 ticket_b2 <- extraer_informacion("./data/20231224 Mercadona 37,49 Ôé¼.txt")
 ticket_c2 <- extraer_informacion("./data/20231226 Mercadona 25,83 Ôé¼.txt")
@@ -85,11 +80,7 @@ ticket_g2 <- extraer_informacion("./data/20240109 Mercadona 7,35 Ôé¼.txt")
 # En caso de que no esté especificado en el ticket alguna de esta información,
 # se indicará que no ha podido ser encontrada
 
-# Mostramos la informacion de un ticket, por ejemplo el ticket a:
-
-
 #Mostramos la informacion de un ticket, por ejemplo el ticket a:
-ticket_a
 ticket_a2
 ```
 ```{r}
