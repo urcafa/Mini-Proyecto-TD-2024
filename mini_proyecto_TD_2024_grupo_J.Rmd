@@ -24,11 +24,11 @@ En esta primera parte de la entrega, vamos a importar y a analizar la informaci�
 
 ## Carga de librerías y datos necesarios para el análisis
 
-Para empezar, se cargan todas las librerías necesarias para la realización del código. Esto se hace de manera más elegante utilizando el paquete pacman de RStudio. A continuación, se realiza la carga del conjunto de datos, los cuales se encuentran en formato .pdf. No obstante, no podemos importarlos desde este formato, así que vamos a convertirlos a .txt mediante una función que hemos creado en Python con la librería PyPDF2. De esta forma, obtenemos los ficheros .txt para poder importarlos en RStudio y trabajar con ellos a modo de dataframe.
+Para empezar, se cargan todas las librerías necesarias para la realización del código. Esto se hace de manera más elegante utilizando el paquete pacman de RStudio. A continuación, se realiza la carga del conjunto de datos, los cuales se encuentran en formato .pdf. No obstante, no podemos importarlos desde este formato, así que vamos a convertirlos a .txt mediante una función que hemos creado en Python con la librería PyPDF2. De esta forma, obtenemos los ficheros .txt para poder importarlos en RStudio y trabajar con ellos.
 
 ## Características generales de los datos
 
-Los dataframes que representan la información de los tickets contienen tres variables: producto, unidades y precio. Las variables primera y la tercera son de tipo "char", mientras que la segunda variable es de tipo "num". El número de registros de cada dataframe depende del número de productos que se hayan comprado según el ticket. 
+Los datos de los tickets se van a encontrar en listas que contienen dos dataframes: por un lado, el primero contiene todos los productos excepto las frutas y contiene cuatro observaciones (producto, de tipo "char"; unidades, precio_completo y precio_individual, estos de tipo "num"); y por otro lado, un segundo dataframe que contiene los datos solo de las frutas y contiene cinco observaciones (frutas, de tipo "char"; precios, unidades, peso_kg y precio_por_kg, estos de tipo "num").
 
 ## Análisis de "missing data" en nuestro conjunto de interés
 
@@ -36,7 +36,7 @@ Por suerte, en nuestros conjuntos de datos no hay "missing data", ya que se trat
 
 # Importación de los datos
 
-Como ya hemos explicado previamente, hemos convertido nuestros ficheros a .txt desde .pdf. Ahora, vamos a crear otra función para separar las cadenas de caracteres de los ficheros y así importar los datos en los dataframes de forma que nos resulte más fácil trabajar con ellos.
+Como ya hemos explicado previamente, hemos convertido nuestros ficheros a .txt desde .pdf. Ahora, vamos a crear otra función para separar las cadenas de caracteres de los ficheros y así importar los datos en los dataframes de forma que nos resulte más fácil trabajar con ellos. También hemos de crear un par de funciones que lean la fruta de forma correcta, pues el formato es distinto al resto de productos.
 
 ```{r}
 # Primero que nada, cargamos las librerías:
@@ -85,8 +85,6 @@ ticket_a2
 ```
 ```{r}
 separar <- function(df) {
-  
-  
   df <- df %>%
     mutate(unidades = as.numeric(substr(producto, 1,1))) %>% 
     # Seleccionamos el número de unidades y hacemos una columna
@@ -105,98 +103,90 @@ separar <- function(df) {
   
   return(df)
 }
-
 ```
 
 
 
 
 ```{r}
-
-
-arreglar_fruta<- function(fruta){
-  #El argumento es un vector con varias frutas y su peso y precio
+arreglar_fruta <- function(fruta){
+  
+  # El argumento es un vector con varias frutas y su peso y precio
   
   precios <- fruta[seq_along(fruta) %% 2 == 0]  
   frutas <- fruta[seq_along(fruta) %% 2 != 0] 
-  df<-data.frame(frutas=frutas,  precios=precios)
-  #Separo el vector en dos y creo un dataframe
-  
-  
-  df<- df %>%
+  df <- data.frame(frutas = frutas,  precios = precios)
+  # Separamos el vector en dos y creo un dataframe
+  df <- df %>%
     mutate(unidades = as.numeric(substr(frutas, 1,1)),
            # Seleccionamos el número de unidades y hacemos una columna
-           frutas=substr(frutas,2, nchar(frutas)),
-           # Borro el número de unidades de la columna
-           peso_kg=substr(precios,1,nchar(precios)-20)) %>%
-    #Obtengo el peso de la columna precios y creo una columna
-    mutate(precio_por_kg=substr(precios,10,14)) %>%
-    #Obtengo el pprecio por kgeso de la columna precios y creo una columna
-    mutate(precios=substr(precios,nchar(precios)-4,nchar(precios)))
-  #Selecciono unicamente el precio de la columna precios
+           frutas = substr(frutas,2, nchar(frutas)),
+           # Borramos el número de unidades de la columna
+           peso_kg = substr(precios,1,nchar(precios)-20)) %>%
+    # Obtenemos el peso de la columna precios y creamos una columna
+    mutate(precio_por_kg = substr(precios,10,14)) %>%
+    # Obtenemos el precio por kg de la columna precios y creamos una columna
+    mutate(precios = substr(precios,nchar(precios)-4,nchar(precios)))
+  # Seleccionamos únicamente el precio de la columna precios
   
   return(df)
 }
-
 ```
 
 
 
 ```{r}
-
-
-
 detectar_fruta <- function(a){
   texto <-  suppressWarnings(readLines(a, encoding = "latin1"))
-  #Con UTF-8 daba error en algunos caracteres
+  # Con UTF-8 daba error en algunos caracteres
   
-  productos<-texto[8:(length(texto)-11)]
+  productos <- texto[8:(length(texto)-11)]
   # Seleccionamos solo las filas con productos y creamos un dataframe
 
   while (!grepl("^\\d", tail(productos, 1))) {
     productos <- productos[-length(productos)]
   }
-  #Para asegurarme de incluir todos los productos selecciono lineas de mas y 
-  #borro las sobrantes en este bucle
+  # Para asegurarnos de incluir todos los productos, seleccionamos líneas de más y 
+  # borramos las sobrantes en este bucle
   
+  df <- data.frame(producto = productos)
   
-  
-  df<-data.frame(producto=productos )
-  
-  indices <-c()
+  indices <- c()
 
   for (i in productos){
-    idx<-str_detect(i, "^[0-9]{1,3},[0-9]{3}")
+    idx <- str_detect(i, "^[0-9]{1,3},[0-9]{3}")
     indices <- append(indices, idx)
     
   }
   ind_frut <- which(indices)
-  #Detecto los indices de las frutas
+  # Detectamos  los índices de las frutas
   
-  frutas<-c()
+  frutas <- c()
   for (i in ind_frut){
     frutas <- rbind(frutas, df[(i-1), ])
     frutas <- rbind(frutas, df[i, ])
 
-  }  
-  #Creo un vector con las frutas y sus precios
+  } 
   
+  #Creamos un vector con las frutas y sus precios
   
   for (i in ind_frut){
     df <- subset(df, row.names(df) != i)
     df <- subset(df, row.names(df) != i-1)
-  }  
-  #Quito las frutas del dataframe
+  } 
   
+  #Quitamos las frutas del dataframe
   
   df_productos<-separar(df)
   
   df_frutas<-arreglar_fruta(frutas)
   
   return(list(df_productos,df_frutas))
-  #Devuelve un dataframe con producos y otro con las frutas
+  
+  # Devuelve un dataframe con producos y otro con las frutas
 
 }
+
 ticket_a <- detectar_fruta("./data/20231218 Mercadona 60,47 Ôé¼.txt")
 ticket_b <- detectar_fruta("./data/20231224 Mercadona 37,49 Ôé¼.txt")
 ticket_c <- detectar_fruta("./data/20231226 Mercadona 25,83 Ôé¼.txt")
@@ -207,9 +197,12 @@ ticket_g <- detectar_fruta("./data/20240109 Mercadona 7,35 Ôé¼.txt")
 
 
 ticket_a
-ticket_b[1]
-ticket_b[2]
-
+ticket_b
+ticket_c
+ticket_d
+ticket_e
+ticket_f
+ticket_g
 ```
 
 # Preguntas
