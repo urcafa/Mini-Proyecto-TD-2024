@@ -3,7 +3,6 @@ title: "Mini Proyecto TD 2024"
 subtitle: "Entrega parcial"
 author: |
   Víctor Álvarez Palomares,  
-  Belén Gallego Andreu,  
   Sergio Martínez Yagüe,  
   Ferran Medina Mompó,  
   Carles Pascual i Sivera,  
@@ -205,6 +204,8 @@ ticket_f
 ticket_g
 ```
 
+
+
 # Preguntas
 
 A continuación vamos a plantearnos diferentes cuestiones que nos podrían venir a la cabeza a la hora de hacer un análisis de los tickets de la compra. 
@@ -215,11 +216,11 @@ A continuación vamos a plantearnos diferentes cuestiones que nos podrían venir
 (compras diarias, semanales...)?
 4) ¿Qué productos se compran más según el precio de la compra?
 5) ¿Qué días hay compras más grandes?
-6) ¿Qué tipo de pago es más común según el dinero gastado?
+6) ¿Qué productos tienen distintos tipos de IVA?
 7) ¿Cuántos productos se compran de media en una compra?
 8) ¿Hay algún patrón de compra según la estación del año?
 
-Además podríamos calcular las distribuiciones de compras por categorías de productos para saber qué tipos de productos son los más comprados. A partir de esto también podríamos obtener la distribución de gastos que hace el consumidor a la hora de realizar la compra.
+Además podríamos calcular las distribuciones de compras por categorías de productos para saber qué tipos de productos son los más comprados. A partir de esto también podríamos obtener la distribución de gastos que hace el consumidor a la hora de realizar la compra.
 
 Asimismo, podríamos plantearnos otras cuestiones como el gasto medio de compra, si se hace el pago con efectivo o tarjeta o incluso si los usuarios tienden a ir en coche o a pie (depende de el tamaño de compra, o incluso comodidad).
 
