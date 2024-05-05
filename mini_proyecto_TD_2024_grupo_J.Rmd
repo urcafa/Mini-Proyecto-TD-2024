@@ -139,7 +139,13 @@ detectar_fruta <- function(a){
   texto <-  suppressWarnings(readLines(a, encoding = "latin1"))
   # Con UTF-8 daba error en algunos caracteres
   
-  productos <- texto[8:(length(texto)-11)]
+  indice_parking <- grep("^1PARKING", texto)
+  
+  if (length(indice_parking) == 0) {
+    productos <- texto[8:(length(texto) - 11)]
+  } else {
+    productos <- texto[8:(indice_parking - 1)]
+  }
   # Seleccionamos solo las filas con productos y creamos un dataframe
 
   while (!grepl("^\\d", tail(productos, 1))) {
@@ -193,17 +199,43 @@ ticket_d <- detectar_fruta("./data/20231230 Mercadona 66,30 Ôé¼.txt")
 ticket_e <- detectar_fruta("./data/20240102 Mercadona 70,04 Ôé¼.txt")
 ticket_f <- detectar_fruta("./data/20240108 Mercadona 83,73 Ôé¼.txt")
 ticket_g <- detectar_fruta("./data/20240109 Mercadona 7,35 Ôé¼.txt")
+ticket_h <- detectar_fruta("./data/20240123 Mercadona 44,13 Ôé¼.txt")
+ticket_i <- detectar_fruta("./data/20240127 Mercadona 108,33 Ôé¼.txt")
+ticket_h
+ticket_i
 
-
-ticket_a
-ticket_b
-ticket_c
-ticket_d
-ticket_e
-ticket_f
-ticket_g
 ```
 
+```{r}
+tiposIVA<-obtener_caracteres_antes_del_porcentaje <- function(a) {
+    texto <-  suppressWarnings(readLines(a, encoding = "latin1"))
+  coincidencias <- grep(".*(?=%)", texto, perl = TRUE, value = TRUE)
+  return(coincidencias)
+}
+
+ticket_a2 <- "./data/20231218 Mercadona 60,47 Ôé¼.txt"
+ivas<-tiposIVA(ticket_a2)
+
+    texto <-  suppressWarnings(readLines(ticket_a2, encoding = "latin1"))
+texto
+
+```
+
+
+```{r}
+lista <- list() 
+carpeta <- "data"
+#Creamos la lista de los ficheros
+fichero<-list.files(path = carpeta, full.names = TRUE, recursive = TRUE, pattern = ".txt")
+df <- as.data.frame(fichero)
+for (i in (1:nrow(df))){
+  lista[i] <- extraer_informacion(df$fichero[i])
+  lista[i] <- detectar_fruta(df$fichero[i])
+  print(lista[i])
+}
+
+
+```
 
 
 # Preguntas
