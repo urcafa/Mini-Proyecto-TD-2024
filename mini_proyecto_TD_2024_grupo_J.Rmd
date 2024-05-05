@@ -201,6 +201,13 @@ ticket_f <- detectar_fruta("./data/20240108 Mercadona 83,73 Ôé¼.txt")
 ticket_g <- detectar_fruta("./data/20240109 Mercadona 7,35 Ôé¼.txt")
 ticket_h <- detectar_fruta("./data/20240123 Mercadona 44,13 Ôé¼.txt")
 ticket_i <- detectar_fruta("./data/20240127 Mercadona 108,33 Ôé¼.txt")
+ticket_a
+ticket_b
+ticket_c
+ticket_d
+ticket_e
+ticket_f
+ticket_g
 ticket_h
 ticket_i
 
@@ -209,15 +216,15 @@ ticket_i
 ```{r}
 tiposIVA<-obtener_caracteres_antes_del_porcentaje <- function(a) {
     texto <-  suppressWarnings(readLines(a, encoding = "latin1"))
-  coincidencias <- grep(".*(?=%)", texto, perl = TRUE, value = TRUE)
-  return(coincidencias)
+    indice1 <- grep("^IVA BASE", texto)
+    indice2 <- grep("^TOTAL ", texto)
+    IVA <- texto[indice1, indice2]
+  return(IVA)
 }
 
 ticket_a2 <- "./data/20231218 Mercadona 60,47 Ôé¼.txt"
-ivas<-tiposIVA(ticket_a2)
+ivas<-tiposIVA("./data/20231224 Mercadona 37,49 Ôé¼.txt")
 
-    texto <-  suppressWarnings(readLines(ticket_a2, encoding = "latin1"))
-texto
 
 ```
 
