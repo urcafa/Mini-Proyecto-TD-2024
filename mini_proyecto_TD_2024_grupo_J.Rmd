@@ -267,3 +267,33 @@ Asimismo, podríamos plantearnos otras cuestiones como el gasto medio de compra,
 ## ¿Qué productos se compran más?
 
 Para calcular los productos más vendidos a partir de los tickets de compra, primero vamos a contabilizar la cantidad de cada producto que se compró en cada ticket, lo que nos da un recuento de unidades para cada producto. Tras ello, sumaremos las unidades de cada producto a través de todos los tickets para obtener un total de unidades vendidas para cada producto. Finalmente, ordenamos los productos por el total de unidades vendidas para identificar los productos más vendidos. Es decir, aquellos productos con más unidades vendidas son los productos más vendidos.
+
+```{r, echo=FALSE, warning=FALSE}
+library(ggplot2)
+# Utilizamos la función que ya tenemos para obtener la lista de dataframes
+lista_df <- lista
+
+# Unimos todos los dataframes de los tickets en uno solo
+todos_los_tickets <- do.call(rbind, lista_df)
+# Eliminamos la última fila del dataframe
+todos_los_tickets <- head(todos_los_tickets, -1)
+
+# Convertimos la columna 'unidades' a numérica
+todos_los_tickets$unidades <- as.numeric(as.character(todos_los_tickets$unidades))
+
+# Eliminamos las filas con NA (que son las filas que no se pudieron convertir a numérico)
+todos_los_tickets <- todos_los_tickets[!is.na(todos_los_tickets$unidades), ]
+
+# A continuación, agrupamos los datos por producto y calculamos las unidades totales de cada producto
+productos_por_unidades <- todos_los_tickets %>%
+  group_by(producto) %>%
+  summarise(
+    unidades_total = sum(unidades),
+    .groups = 'drop'
+  )
+# Calcula el número total de tickets
+num_tickets <- length(lista_df)
+
+# Calcula la media de unidades por ticket para cada producto
+productos_por_unidades <- productos_por_unidades %>%
+  mutate(unidades_promedio_por_ticket = unidades_total / num_tickets)
