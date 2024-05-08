@@ -253,7 +253,7 @@ A continuación vamos a plantearnos diferentes cuestiones que nos podrían venir
 2) ¿Cuál es el gasto medio de cada compra?
 3) ¿Qué nos podría dar a entender la frecuencia de compra de cada usuario
 (compras diarias, semanales...)?
-4) ¿Qué productos se compran más según el precio de la compra?
+4) ¿Qué productos son los más comprados?
 5) ¿Qué días hay compras más grandes?
 6) ¿Qué productos tienen distintos tipos de IVA?
 7) ¿Cuántos productos se compran de media en una compra?
