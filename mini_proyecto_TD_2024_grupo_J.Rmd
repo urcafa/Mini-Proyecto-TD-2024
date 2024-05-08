@@ -317,5 +317,5 @@ grafico
 
 #Si queremos descargarnos el gráfico
 #ggsave("productos_mas_comprados.jpeg", grafico, width = 10, height = 6.5)
-
 ```
+Como se puede observar en la gráfica, las bolsas de plástico son el producto más vendido. Con más de 1.1 bolsas de plástico compradas por ticket. Además productos como la chaparta cristal, el zumo fresco, la leche descnatada, la caracola al cacao o el queso a lonchas de cabra también son los más vendidos entre los tickets analizados.
