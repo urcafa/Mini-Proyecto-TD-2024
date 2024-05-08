@@ -319,3 +319,13 @@ grafico
 #ggsave("productos_mas_comprados.jpeg", grafico, width = 10, height = 6.5)
 ```
 Como se puede observar en la gráfica, las bolsas de plástico son el producto más vendido. Con más de 1.1 bolsas de plástico compradas por ticket. Además productos como la chaparta cristal, el zumo fresco, la leche descnatada, la caracola al cacao o el queso a lonchas de cabra también son los más vendidos entre los tickets analizados.
+
+## ¿Cuántos productos se compran de media en una compra?
+
+Para saber la media de productos por tickets hemos contabilizado todos los productos y a esta cifra le hemos dividido el número total de tickets.
+
+```{r, echo = False}
+# Calculamos de la media de productos por ticket con dos decimales
+media_productos_por_ticket = round(sum(nrow(todos_los_tickets)) / num_tickets, 2)
+```
+Observamos que se obtiene que la media de productos por ticket es de **`media_productos_por_ticket`**. Además sabemos que esto va relacionado con el precio de cada compra. Cuantos más productos compres, más cara saldrá la compra.
