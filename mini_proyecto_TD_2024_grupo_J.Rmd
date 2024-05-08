@@ -297,3 +297,25 @@ num_tickets <- length(lista_df)
 # Calcula la media de unidades por ticket para cada producto
 productos_por_unidades <- productos_por_unidades %>%
   mutate(unidades_promedio_por_ticket = unidades_total / num_tickets)
+
+# Ahora, ordenamos los productos por sus unidades promedio por ticket
+productos_ordenados <- productos_por_unidades %>%
+  arrange(desc(unidades_promedio_por_ticket))
+
+# Finalmente, podemos ver los productos que se compran más según la media de unidades por ticket
+top_productos <- head(productos_ordenados)
+top_productos
+
+# Creamos un gráfico
+grafico <- ggplot(top_productos, aes(x = reorder(producto, -unidades_promedio_por_ticket), y = unidades_promedio_por_ticket)) +
+  geom_bar(stat = "identity", fill = "seagreen", width = 0.4) + # cambia el ancho de las barras a 0.5
+  theme_minimal() + # usa un tema minimalista
+  theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 6)) +
+  ylim(0,2) +
+  labs(x = "Producto", y = "Unidades promedio por ticket", title = "Productos más comprados según la media de unidades por ticket")
+grafico
+
+#Si queremos descargarnos el gráfico
+#ggsave("productos_mas_comprados.jpeg", grafico, width = 10, height = 6.5)
+
+```
