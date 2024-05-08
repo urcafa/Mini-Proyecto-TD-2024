@@ -264,3 +264,6 @@ Además podríamos calcular las distribuciones de compras por categorías de pro
 
 Asimismo, podríamos plantearnos otras cuestiones como el gasto medio de compra, si se hace el pago con efectivo o tarjeta o incluso si los usuarios tienden a ir en coche o a pie (depende de el tamaño de compra, o incluso comodidad).
 
+## ¿Qué productos se compran más?
+
+Para calcular los productos más vendidos a partir de los tickets de compra, primero vamos a contabilizar la cantidad de cada producto que se compró en cada ticket, lo que nos da un recuento de unidades para cada producto. Tras ello, sumaremos las unidades de cada producto a través de todos los tickets para obtener un total de unidades vendidas para cada producto. Finalmente, ordenamos los productos por el total de unidades vendidas para identificar los productos más vendidos. Es decir, aquellos productos con más unidades vendidas son los productos más vendidos.
