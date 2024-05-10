@@ -291,6 +291,47 @@ lista_con_categorias <- add_categoria(lista)
 ```
 
 
+## ¿Cuál es el gasto medio de cada compra?
+
+Para obtener esta información, necesitamos analizar cada recibo que se pasa a la función. Para determinar el costo total de la compra, utilizamos las funciones "grep" y "sub", que permiten buscar el texto "TOTAL (€)" en cada línea y extraer el valor correspondiente al total de la compra.
+
+Una vez que hemos extraído los precios de todos los recibos, la función calcula la suma de estos valores y luego la divide por el número total de recibos analizados para obtener el promedio del gasto.
+
+Vamos a probar con un ejemplo usando tres tickets de diferentes precios:
+
+```{r}
+leer_precio_total <- function(nombres_archivos) {
+  precios_totales <- numeric(length(nombres_archivos)) # Vector para almacenar los precios totales
+  
+  for (i in seq_along(nombres_archivos)) {
+    nombre_archivo <- nombres_archivos[i]
+    lineas <- readLines(nombre_archivo)
+    linea_total <- grep("TOTAL \\(€\\)", lineas, value = TRUE)
+    
+    if (length(linea_total) > 0) {
+      precio_total <- sub(".*TOTAL \\(€\\) ([0-9]+,[0-9]+).*", "\\1", linea_total)
+      precios_totales[i] <- as.numeric(gsub(",", ".", precio_total))
+    } else {
+      precios_totales[i] <- NA
+    }
+  }
+  
+  if (all(is.na(precios_totales))) {
+    cat("No se pudo leer el precio total de ninguno de los archivos.\n")
+  } else {
+    cat("Precios total de cada ticket:\n")
+    print(precios_totales, na.rm = TRUE)
+    precio_medio <- mean(precios_totales, na.rm = TRUE)
+    cat(sprintf("Precio medio de los tickets: %.2f €\n", precio_medio))
+  }
+}
+
+# Usar la función para leer el precio total de múltiples archivos
+archivos <- c("data/20240127 Mercadona 108,33.txt", "data/20240129 Mercadona 79,82.txt", "data/20231216 Mercadona 46,19.txt")
+leer_precio_total(archivos)
+
+```
+
 ## ¿Qué productos se compran más?
 
 Para calcular los productos más vendidos a partir de los tickets de compra, primero vamos a contabilizar la cantidad de cada producto que se compró en cada ticket, lo que nos da un recuento de unidades para cada producto. Tras ello, sumaremos las unidades de cada producto a través de todos los tickets para obtener un total de unidades vendidas para cada producto. Finalmente, ordenamos los productos por el total de unidades vendidas para identificar los productos más vendidos. Es decir, aquellos productos con más unidades vendidas son los productos más vendidos.
