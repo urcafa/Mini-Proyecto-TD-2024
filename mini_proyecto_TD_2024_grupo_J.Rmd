@@ -9,8 +9,8 @@ author: |
   y Úrsula Casaus Fabra
 date: "`r Sys.Date()`"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -41,7 +41,7 @@ Como ya hemos explicado previamente, hemos convertido nuestros ficheros a .txt d
 # Primero que nada, cargamos las librerías:
 
 library(pacman)
-p_load(dplyr, stringr)
+p_load(dplyr, stringr,ggplot2,tidyr)
 
 
 extraer_informacion <- function(archivo) {
@@ -67,20 +67,7 @@ extraer_informacion <- function(archivo) {
   return(df)
 }
 
-ticket_a2 <- extraer_informacion("./data/20231218 Mercadona 60,47 Ôé¼.txt")
-ticket_b2 <- extraer_informacion("./data/20231224 Mercadona 37,49 Ôé¼.txt")
-ticket_c2 <- extraer_informacion("./data/20231226 Mercadona 25,83 Ôé¼.txt")
-ticket_c2 <- extraer_informacion("./data/20231230 Mercadona 66,30 Ôé¼.txt")
-ticket_d2 <- extraer_informacion("./data/20240102 Mercadona 70,04 Ôé¼.txt")
-ticket_e2 <- extraer_informacion("./data/20240108 Mercadona 83,73 Ôé¼.txt")
-ticket_f2 <- extraer_informacion("./data/20240109 Mercadona 7,35 Ôé¼.txt")
-ticket_g2 <- extraer_informacion("./data/20240109 Mercadona 7,35 Ôé¼.txt")
 
-# En caso de que no esté especificado en el ticket alguna de esta información,
-# se indicará que no ha podido ser encontrada
-
-#Mostramos la informacion de un ticket, por ejemplo el ticket a:
-ticket_a2
 ```
 ```{r}
 separar <- function(df) {
@@ -136,7 +123,7 @@ arreglar_fruta <- function(fruta){
 
 ```{r}
 detectar_fruta <- function(a){
-  texto <-  suppressWarnings(readLines(a, encoding = "latin1"))
+  texto <-  suppressWarnings(readLines(a, encoding = "windows-1252"))
   # Con UTF-8 daba error en algunos caracteres
   
   indice_parking <- grep("^1PARKING", texto)
@@ -192,15 +179,15 @@ detectar_fruta <- function(a){
 
 }
 
-ticket_a <- detectar_fruta("./data/20231218 Mercadona 60,47 Ôé¼.txt")
-ticket_b <- detectar_fruta("./data/20231224 Mercadona 37,49 Ôé¼.txt")
-ticket_c <- detectar_fruta("./data/20231226 Mercadona 25,83 Ôé¼.txt")
-ticket_d <- detectar_fruta("./data/20231230 Mercadona 66,30 Ôé¼.txt")
-ticket_e <- detectar_fruta("./data/20240102 Mercadona 70,04 Ôé¼.txt")
-ticket_f <- detectar_fruta("./data/20240108 Mercadona 83,73 Ôé¼.txt")
-ticket_g <- detectar_fruta("./data/20240109 Mercadona 7,35 Ôé¼.txt")
-ticket_h <- detectar_fruta("./data/20240123 Mercadona 44,13 Ôé¼.txt")
-ticket_i <- detectar_fruta("./data/20240127 Mercadona 108,33 Ôé¼.txt")
+ticket_a <- detectar_fruta("./data/20231216 Mercadona 46,19.txt")
+ticket_b <- detectar_fruta("./data/20231218 Mercadona 13,34.txt")
+ticket_c <- detectar_fruta("./data/20231218 Mercadona 60,47.txt")
+ticket_d <- detectar_fruta("./data/20231219 Mercadona 63,80.txt")
+ticket_e <- detectar_fruta("./data/20231223 Mercadona 86,53.txt")
+ticket_f <- detectar_fruta("./data/20231224 Mercadona 37,49.txt")
+ticket_g <- detectar_fruta("./data/20231226 Mercadona 25,83.txt")
+ticket_h <- detectar_fruta("./data/20231228 Mercadona 63,50.txt")
+ticket_i <- detectar_fruta("./data/20231229 Mercadona 15,22.txt")
 ticket_a
 ticket_b
 ticket_c
@@ -213,19 +200,117 @@ ticket_i
 
 ```
 
+
 ```{r}
-tiposIVA<-obtener_caracteres_antes_del_porcentaje <- function(a) {
-    texto <-  suppressWarnings(readLines(a, encoding = "latin1"))
-    indice1 <- grep("^IVA BASE", texto)
-    indice2 <- grep("^TOTAL ", texto)
-    IVA <- texto[indice1, indice2]
-  return(IVA)
+
+dfIVA <- function(listaArchivos) {
+    dfl <- list()   
+    
+    for (archivo in listaArchivos) {
+        texto <- suppressWarnings(readLines(archivo, encoding = "windows-1252"))
+        total1 <- texto[grep("^TOTAL \\(", texto)]
+        indice1 <- grep("^IVA BASE", texto)
+        indice2 <- grep("^TOTAL \\d", texto)
+        IVA <- texto[(indice1 + 1):(indice2 - 1)]
+        IVA<- c(IVA,texto[indice2])
+        matrizIVA <- matrix(IVA, ncol = 5, byrow = TRUE)
+ 
+        dfIVA <- as.data.frame(matrizIVA)
+         
+        dfl[[archivo]] <- dfIVA
+    }
+     
+    df_final<-bind_rows(dfl)
+    df1 <- df_final %>%
+  rowwise() %>%
+  mutate(veintiuno = ifelse(any(startsWith(c_across(everything()), "21")), 
+                   first(c_across(everything())[startsWith(c_across(everything()), "21")]), 
+                   NA))%>%
+    mutate(diez = ifelse(any(startsWith(c_across(everything()), "10")), 
+                   first(c_across(everything())[startsWith(c_across(everything()), "10")]), 
+                   NA))%>%
+  mutate(cinco = ifelse(any(startsWith(c_across(everything()), "5")), 
+                   first(c_across(everything())[startsWith(c_across(everything()), "5")]), 
+                   NA))%>%
+  mutate(cero = ifelse(any(startsWith(c_across(everything()), "0")), 
+                   first(c_across(everything())[startsWith(c_across(everything()), "0")]), 
+                   NA))%>%
+  mutate(total = ifelse(any(startsWith(c_across(everything()), "TOTAL")), 
+                   first(c_across(everything())[startsWith(c_across(everything()), "TOTAL")]), 
+                   NA))
+  df <-df1%>%
+  select(veintiuno,diez,cinco,cero,total)%>%
+  mutate(base21=substr(veintiuno,5,8))%>%
+  mutate(base10=substr(diez,5,8))%>%
+  mutate(base5=substr(cinco,4,8))%>%
+  mutate(base0=substr(cero,4,8))%>%
+  mutate(totalBase=substr(total,6,(nchar(total)-4)))%>%
+  mutate(imponible21=substr(veintiuno,(nchar(veintiuno)-4),nchar(veintiuno)))%>%
+  mutate(imponible10=substr(diez,(nchar(diez)-4),nchar(diez)))%>%
+  mutate(imponible5=substr(cinco,(nchar(cinco)-4),nchar(cinco)))%>%
+  mutate(imponible0=substr(cero,(nchar(cero)-4),nchar(cero)))%>%
+  mutate(totalImponible=substr(total,(nchar(total)-4),nchar(total)))%>%
+      select(base21,base10,base5,base0,imponible21,imponible10,imponible5,imponible0,totalBase,totalImponible) %>%
+  mutate_all(~ str_replace_all(., ",", "."))%>%
+   mutate_all(as.numeric)
+    
+    return(df)
 }
+carpeta <- "data"
+fichero<-list.files(path = carpeta, full.names = TRUE, recursive = TRUE, pattern = ".txt")
 
-ticket_a2 <- "./data/20231218 Mercadona 60,47 Ôé¼.txt"
-ivas<-tiposIVA("./data/20231224 Mercadona 37,49 Ôé¼.txt")
+a<-dfIVA(fichero)
+a
+ 
+```
 
 
+```{r}
+a %>%group_by()%>%
+  summarise(s21= sum(imponible21, na.rm = TRUE),s10= sum(imponible10, na.rm = TRUE),s5= sum(imponible5, na.rm = TRUE),b21= sum(base21, na.rm = TRUE),b10= sum(base10, na.rm = TRUE),b5= sum(base5, na.rm = TRUE))
+
+media_columnas <- colMeans(a, na.rm = TRUE)
+
+print(media_columnas)
+
+df_long <- gather(a, key = "Variable", value = "Valor")
+
+ggplot(df_long, aes(x = Variable, y = Valor)) +
+  geom_boxplot() +
+  labs(title = "Boxplot de cada Variable", x = "Variable", y = "Valor")
+```
+```{r}
+
+aGr<-a%>%
+  select(base21,base10,base5,base0)
+aGr<-gather(aGr, key = "Variable", value = "Valor")
+        ggplot(data=aGr, aes(x=sqrt(Valor), fill=Variable)) +
+               geom_density(alpha=.3)+
+  scale_fill_manual(values = c("blue", "red", "green", "orange"))
+        
+
+        
+        
+        
+aGr<-a%>%
+  select(imponible21,imponible10,imponible5,imponible0)
+aGr<-gather(aGr, key = "Variable", value = "Valor")
+        ggplot(data=aGr, aes(x=sqrt(Valor), fill=Variable)) +
+               geom_density(alpha=.3)+
+  scale_fill_manual(values = c("purple", "yellow", "cyan", "green"))
+```
+
+```{r}
+a1<-tail(a,1)
+a1long <- gather(a1, key = "Variable", value = "Valor")
+
+ggplot(a1long, aes(x = Variable, y = Valor, fill=Variable)) +
+  geom_bar(stat = "identity") +  
+  labs(title = "Gráfico de Barras", x = "Variable", y = "Valor") +  # Etiquetas del gráfico
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+  slice(a,1)
 ```
 
 
@@ -239,8 +324,8 @@ for (i in (1:nrow(df))){
   lista[i] <- extraer_informacion(df$fichero[i])
   lista[i] <- detectar_fruta(df$fichero[i])
   print(lista[i])
-}
-
+} 
+lista[1]
 
 ```
 
