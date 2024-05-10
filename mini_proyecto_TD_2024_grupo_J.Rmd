@@ -397,3 +397,42 @@ Para saber la media de productos por tickets hemos contabilizado todos los produ
 media_productos_por_ticket = round(sum(nrow(todos_los_tickets)) / num_tickets, 2)
 ```
 Observamos que se obtiene que la media de productos por ticket es de **`r media_productos_por_ticket`**. Además sabemos que esto va relacionado con el precio de cada compra. Cuantos más productos compres, más cara saldrá la compra.
+
+
+## ¿Qué productos cambian de precio (por kg)?
+
+En este análisis, exploraremos cómo los precios de ciertos productos varían en función de su peso en las compras realizadas en Mercadona. Para ello, hemos desarrollado una función especializada que recorre el contenido de varios tickets almacenados en archivos de texto. Esta función está diseñada para identificar y extraer información sobre los productos vendidos por peso, capturando tanto el nombre del producto como su precio por kilogramo. 
+
+```{r}
+extraer_productos_por_peso <- function(rutas_archivos) {
+  # Procesamos cada archivo de ticket proporcionado
+  for (ruta_archivo in rutas_archivos) {
+    # Leemos el contenido del archivo
+    lineas <- readLines(ruta_archivo)
+    
+    for (i in 2:length(lineas)) {
+      # Buscamos las líneas que contienen información de peso y precio por kg
+      if (grepl("kg", lineas[i]) && grepl("€/kg", lineas[i])) {
+        nombre_producto <- gsub("\\d+", "", lineas[i-1])  # Eliminar números para limpiar el nombre
+        nombre_producto <- trimws(nombre_producto)  # Eliminar espacios en blanco sobrantes
+        
+        # Extraemos la información de peso y precio por kg
+        precio_por_kg_info <- regmatches(lineas[i], regexpr("\\d+,\\d+ €/kg", lineas[i]))
+        
+        descripcion_producto <- sprintf("%s %s", nombre_producto, precio_por_kg_info)
+        
+        # Mostramos el nombre del producto y su precio por kg
+        print(descripcion_producto)
+      }
+    }
+  }
+}
+
+```
+
+```{r}
+rutas_tickets <- c("data/20240127 Mercadona 108,33.txt","data/20240115 Mercadona 117,41.txt", "data/20240105 Mercadona 63,19.txt")
+extraer_productos_por_peso(rutas_tickets)
+
+```
+
