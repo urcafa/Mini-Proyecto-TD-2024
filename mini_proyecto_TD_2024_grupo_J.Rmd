@@ -40,10 +40,44 @@ Como ya hemos explicado previamente, hemos convertido nuestros ficheros a .txt d
 ```{r}
 # Primero que nada, cargamos las librerías:
 
-library(pacman)
-p_load(dplyr, stringr)
+install_common_libraries <- function() {
+  # Lista de librerías comunes
+  common_libraries <- c(
+    "ggplot2",
+    "dplyr",
+    "tidyr",
+    "readr",
+    "stringr",
+    "purrr",
+    "tibble",
+    "caret",
+    "reshape2",
+    "ggplot2",
+    "lubridate",
+    "magrittr",
+    "knitr",
+    "rmarkdown",
+    "shiny",
+    "leaflet",
+    "plotly"
+    # Agrega más librerías según tus necesidades
+  )
+  
+  # Instalar las librerías
+  for (lib in common_libraries) {
+    if (!requireNamespace(lib, quietly = TRUE)) {
+      install.packages(lib, dependencies = TRUE)
+    }
+  }
+  
+  print("Instalación completada.")
+}
 
+# Llama a la función para instalar las librerías comunes
+install_common_libraries()
+```
 
+```{r}
 extraer_informacion <- function(archivo) {
   # Leemos el texto desde el archivo
   texto <- readLines(archivo, encoding = "UTF-8")
@@ -67,20 +101,8 @@ extraer_informacion <- function(archivo) {
   return(df)
 }
 
-ticket_a2 <- extraer_informacion("./data/20231218 Mercadona 60,47 Ôé¼.txt")
-ticket_b2 <- extraer_informacion("./data/20231224 Mercadona 37,49 Ôé¼.txt")
-ticket_c2 <- extraer_informacion("./data/20231226 Mercadona 25,83 Ôé¼.txt")
-ticket_c2 <- extraer_informacion("./data/20231230 Mercadona 66,30 Ôé¼.txt")
-ticket_d2 <- extraer_informacion("./data/20240102 Mercadona 70,04 Ôé¼.txt")
-ticket_e2 <- extraer_informacion("./data/20240108 Mercadona 83,73 Ôé¼.txt")
-ticket_f2 <- extraer_informacion("./data/20240109 Mercadona 7,35 Ôé¼.txt")
-ticket_g2 <- extraer_informacion("./data/20240109 Mercadona 7,35 Ôé¼.txt")
-
 # En caso de que no esté especificado en el ticket alguna de esta información,
 # se indicará que no ha podido ser encontrada
-
-#Mostramos la informacion de un ticket, por ejemplo el ticket a:
-ticket_a2
 ```
 ```{r}
 separar <- function(df) {
@@ -103,8 +125,6 @@ separar <- function(df) {
   return(df)
 }
 ```
-
-
 
 
 ```{r}
@@ -136,7 +156,7 @@ arreglar_fruta <- function(fruta){
 
 ```{r}
 detectar_fruta <- function(a){
-  texto <-  suppressWarnings(readLines(a, encoding = "latin1"))
+  texto <-  suppressWarnings(readLines(a, encoding = "UTF-8"))
   # Con UTF-8 daba error en algunos caracteres
   
   indice_parking <- grep("^1PARKING", texto)
@@ -187,30 +207,7 @@ detectar_fruta <- function(a){
   df_frutas<-arreglar_fruta(frutas)
   
   return(list(df_productos,df_frutas))
-  
-  # Devuelve un dataframe con producos y otro con las frutas
-
 }
-
-ticket_a <- detectar_fruta("./data/20231218 Mercadona 60,47 Ôé¼.txt")
-ticket_b <- detectar_fruta("./data/20231224 Mercadona 37,49 Ôé¼.txt")
-ticket_c <- detectar_fruta("./data/20231226 Mercadona 25,83 Ôé¼.txt")
-ticket_d <- detectar_fruta("./data/20231230 Mercadona 66,30 Ôé¼.txt")
-ticket_e <- detectar_fruta("./data/20240102 Mercadona 70,04 Ôé¼.txt")
-ticket_f <- detectar_fruta("./data/20240108 Mercadona 83,73 Ôé¼.txt")
-ticket_g <- detectar_fruta("./data/20240109 Mercadona 7,35 Ôé¼.txt")
-ticket_h <- detectar_fruta("./data/20240123 Mercadona 44,13 Ôé¼.txt")
-ticket_i <- detectar_fruta("./data/20240127 Mercadona 108,33 Ôé¼.txt")
-ticket_a
-ticket_b
-ticket_c
-ticket_d
-ticket_e
-ticket_f
-ticket_g
-ticket_h
-ticket_i
-
 ```
 
 ```{r}
@@ -221,13 +218,7 @@ tiposIVA<-obtener_caracteres_antes_del_porcentaje <- function(a) {
     IVA <- texto[indice1, indice2]
   return(IVA)
 }
-
-ticket_a2 <- "./data/20231218 Mercadona 60,47 Ôé¼.txt"
-ivas<-tiposIVA("./data/20231224 Mercadona 37,49 Ôé¼.txt")
-
-
 ```
-
 
 ```{r}
 lista <- list() 
@@ -235,34 +226,70 @@ carpeta <- "data"
 #Creamos la lista de los ficheros
 fichero<-list.files(path = carpeta, full.names = TRUE, recursive = TRUE, pattern = ".txt")
 df <- as.data.frame(fichero)
+
 for (i in (1:nrow(df))){
   lista[i] <- extraer_informacion(df$fichero[i])
   lista[i] <- detectar_fruta(df$fichero[i])
   print(lista[i])
 }
-
-
 ```
-
 
 # Preguntas
 
 A continuación vamos a plantearnos diferentes cuestiones que nos podrían venir a la cabeza a la hora de hacer un análisis de los tickets de la compra. 
 
-1) ¿Qué productos son los más comprados? 
+1) ¿Qué se compra más, comida o bebida? 
 2) ¿Cuál es el gasto medio de cada compra?
-3) ¿Qué nos podría dar a entender la frecuencia de compra de cada usuario
-(compras diarias, semanales...)?
-4) ¿Qué productos son los más comprados?
+3) ¿En qué momento del día se hacen más compras de media?
+4) ¿Qué productos se compran más según el precio de la compra?
 5) ¿Qué días hay compras más grandes?
-6) ¿Qué productos tienen distintos tipos de IVA?
+6) ¿Qué productos tienen distintos tipos de IVA?  
 7) ¿Cuántos productos se compran de media en una compra?
-8) ¿Hay algún patrón de compra según la estación del año?
-9) ¿Qué productos cambian de precio (por kg)?
+8) ¿Qué productos cambian de precio (por kg)?
 
 Además podríamos calcular las distribuciones de compras por categorías de productos para saber qué tipos de productos son los más comprados. A partir de esto también podríamos obtener la distribución de gastos que hace el consumidor a la hora de realizar la compra.
 
 Asimismo, podríamos plantearnos otras cuestiones como el gasto medio de compra, si se hace el pago con efectivo o tarjeta o incluso si los usuarios tienden a ir en coche o a pie (depende de el tamaño de compra, o incluso comodidad).
+
+## ¿Qué se compra más, comida o bebida? 
+
+Vamos a analizar qué se compra más en general por compra: ¿comida o bebida?
+
+```{r}
+# Definimos las categorías que queremos que aparezcan en los tickets de compra.
+
+categorias <- c("comida", "bebida", "otros")
+
+# Creamos una función para clasificar los productos en las diferentes categorías
+
+clasificar_productos <- function(df) {
+  df$categoria <- NA  # Inicializamos la columna de categoría como NA
+  
+  # Clasificación basada en el nombre del producto
+  
+  df$categoria <- ifelse(grepl("[A-Za-z]L$", df$producto), "bebida", 
+                         ifelse(grepl("comida|alimento|plato|ensalada", tolower(df$producto)), "comida", "otros"))
+  
+  return(df)
+}
+
+# Clasificamos los productos en la lista
+
+lista_con_categorias <- lapply(lista, clasificar_productos)
+
+# Creamos la función que va a añadir a cada fichero la columna categoría 
+# con cada producto clasificado.
+
+add_categoria <- function(lista){
+  for (i in 1:length(lista)){
+    lista[[i]] <- clasificar_productos(lista[[i]])
+  }
+  return(lista)
+}
+
+lista_con_categorias <- add_categoria(lista)
+```
+
 
 ## ¿Qué productos se compran más?
 
