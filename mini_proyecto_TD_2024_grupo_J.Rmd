@@ -210,18 +210,44 @@ carpeta <- "data"
 #Creamos la lista de los ficheros
 fichero<-list.files(path = carpeta, full.names = TRUE, recursive = TRUE, pattern = ".txt")
 df <- as.data.frame(fichero)
+
+leer_ficheros <- function(df, fichero){
 for (i in (1:nrow(df))){
   lista[i] <- extraer_informacion(df$fichero[i])
   lista[i] <- detectar_fruta(df$fichero[i])
   print(lista[i])
 }
+  return(lista[i])
+}
+
+lista <- leer_ficheros(df, fichero)
+```
+# Pregunta 1
+
+Vamos a analizar qué se compra más en general por compra: ¿comida o bebida?
+
+```{r}
+# Definimos las categorías en las que queremos clasificar los productos.
+
+categorias <- c("comida", "bebida", "otros")
+
+# Creamos la función que va a añadir a cada fichero la columna categoría.
+
+add_categoria <- function(lista){
+  for (i in (1:length(lista))){
+    lista[i] %>% mutate(categoria = categorias)
+  }
+  return(lista)
+}
+
+# add_categoria(lista)
 ```
 
 # Preguntas
 
 A continuación vamos a plantearnos diferentes cuestiones que nos podrían venir a la cabeza a la hora de hacer un análisis de los tickets de la compra. 
 
-1) ¿Qué productos son los más comprados? 
+1) ¿Qué se compra más, comida o bebida? 
 2) ¿Cuál es el gasto medio de cada compra?
 3) ¿En qué momento del día se hacen más compras de media?
 4) ¿Qué productos se compran más según el precio de la compra?
