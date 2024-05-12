@@ -27,7 +27,7 @@ Para empezar, se cargan todas las librerías necesarias para la realización del
 
 ## Características generales de los datos
 
-Los datos de los tickets se van a encontrar en listas que contienen dos dataframes: por un lado, el primero contiene todos los productos excepto las frutas y contiene cuatro observaciones (producto, de tipo "char"; unidades, precio_completo y precio_individual, estos de tipo "num"); y por otro lado, un segundo dataframe que contiene los datos solo de las frutas y contiene cinco observaciones (frutas, de tipo "char"; precios, unidades, peso_kg y precio_por_kg, estos de tipo "num").
+Los datos de los tickets se van a encontrar en listas de data frames. Cada dataframe contiene registros de 4 variables: "producto" (de tipo caracter), "unidades", "precio_completo" y "precio_individual" (estas de tipo numérico). El número de registros depende de cada data frame, ya que el número de productos varía según la compra.
 
 ## Análisis de "missing data" en nuestro conjunto de interés
 
@@ -78,7 +78,7 @@ install_common_libraries <- function() {
 install_common_libraries()
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, include = FALSE}
 # Borramos todas las variables antes de empezar a escribir nuestro código:
 
 rm(list=ls())
@@ -404,3 +404,211 @@ Para saber la media de productos por tickets hemos contabilizado todos los produ
 media_productos_por_ticket = round(sum(nrow(todos_los_tickets)) / num_tickets, 2)
 ```
 Observamos que se obtiene que la media de productos por ticket es de **`media_productos_por_ticket`**. Además sabemos que esto va relacionado con el precio de cada compra. Cuantos más productos compres, más cara saldrá la compra.
+# Como solo queremos mostrar los 5 primeros, los definimos en otro data frame.
+
+df_precios_plot <- head(df_precios, 5)
+
+grafica <- ggplot(df_precios_plot, aes(x = reorder(producto, precio_individual),
+                                       y = precio_individual)) +
+  geom_bar(stat = "identity", fill = "seagreen", width = 0.5) +
+  labs(title = "Precios de los 5 productos más caros",
+       x = "Producto",
+       y = "Precio individual") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+grafica
+
+# Si queremos descargarnos el gráfico:
+
+ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
+```
+
+
+=======
+## ¿Qué se compra más, comida o bebida? 
+
+Vamos a analizar qué se compra más en general por compra: ¿comida o bebida?
+
+```{r}
+# Definimos las categorías que queremos que aparezcan en los tickets de compra.
+
+categorias <- c("comida", "bebida", "otros")
+
+# Creamos una función para clasificar los productos en las diferentes categorías
+
+clasificar_productos <- function(df) {
+  df$categoria <- NA  # Inicializamos la columna de categoría como NA
+  
+  # Clasificación basada en el nombre del producto
+  
+  df$categoria <- ifelse(grepl("[A-Za-z]L$", df$producto), "bebida", 
+                         ifelse(grepl("comida|alimento|plato|ensalada", tolower(df$producto)), "comida", "otros"))
+  
+  return(df)
+}
+
+# Clasificamos los productos en la lista
+
+lista_con_categorias <- lapply(lista, clasificar_productos)
+
+# Creamos la función que va a añadir a cada fichero la columna categoría 
+# con cada producto clasificado.
+
+add_categoria <- function(lista){
+  for (i in 1:length(lista)){
+    lista[[i]] <- clasificar_productos(lista[[i]])
+  }
+  return(lista)
+}
+
+lista_con_categorias <- add_categoria(lista)
+```
+
+
+## ¿Cuál es el gasto medio de cada compra?
+
+Para obtener esta información, necesitamos analizar cada recibo que se pasa a la función. Para determinar el costo total de la compra, utilizamos las funciones "grep" y "sub", que permiten buscar el texto "TOTAL (€)" en cada línea y extraer el valor correspondiente al total de la compra.
+
+Una vez que hemos extraído los precios de todos los recibos, la función calcula la suma de estos valores y luego la divide por el número total de recibos analizados para obtener el promedio del gasto.
+
+Vamos a probar con un ejemplo usando tres tickets de diferentes precios:
+
+```{r}
+leer_precio_total <- function(nombres_archivos) {
+  precios_totales <- numeric(length(nombres_archivos)) # Vector para almacenar los precios totales
+  
+  for (i in seq_along(nombres_archivos)) {
+    nombre_archivo <- nombres_archivos[i]
+    lineas <- readLines(nombre_archivo)
+    linea_total <- grep("TOTAL \\(€\\)", lineas, value = TRUE)
+    
+    if (length(linea_total) > 0) {
+      precio_total <- sub(".*TOTAL \\(€\\) ([0-9]+,[0-9]+).*", "\\1", linea_total)
+      precios_totales[i] <- as.numeric(gsub(",", ".", precio_total))
+    } else {
+      precios_totales[i] <- NA
+    }
+  }
+  
+  if (all(is.na(precios_totales))) {
+    cat("No se pudo leer el precio total de ninguno de los archivos.\n")
+  } else {
+    cat("Precios total de cada ticket:\n")
+    print(precios_totales, na.rm = TRUE)
+    precio_medio <- mean(precios_totales, na.rm = TRUE)
+    cat(sprintf("Precio medio de los tickets: %.2f €\n", precio_medio))
+  }
+}
+
+# Usar la función para leer el precio total de múltiples archivos
+archivos <- c("data/20240127 Mercadona 108,33.txt", "data/20240129 Mercadona 79,82.txt", "data/20231216 Mercadona 46,19.txt")
+leer_precio_total(archivos)
+
+```
+
+>>>>>>> f4a91bbad941ae2d0e076335c172054e2f49f99f
+## ¿Qué productos se compran más?
+
+Para calcular los productos más vendidos a partir de los tickets de compra, primero vamos a contabilizar la cantidad de cada producto que se compró en cada ticket, lo que nos da un recuento de unidades para cada producto. Tras ello, sumaremos las unidades de cada producto a través de todos los tickets para obtener un total de unidades vendidas para cada producto. Finalmente, ordenamos los productos por el total de unidades vendidas para identificar los productos más vendidos. Es decir, aquellos productos con más unidades vendidas son los productos más vendidos.
+
+```{r, echo=FALSE, warning=FALSE}
+library(ggplot2)
+# Utilizamos la función que ya tenemos para obtener la lista de dataframes
+lista_df <- lista
+
+# Unimos todos los dataframes de los tickets en uno solo
+todos_los_tickets <- do.call(rbind, lista_df)
+# Eliminamos la última fila del dataframe
+todos_los_tickets <- head(todos_los_tickets, -1)
+
+# Convertimos la columna 'unidades' a numérica
+todos_los_tickets$unidades <- as.numeric(as.character(todos_los_tickets$unidades))
+
+# Eliminamos las filas con NA (que son las filas que no se pudieron convertir a numérico)
+todos_los_tickets <- todos_los_tickets[!is.na(todos_los_tickets$unidades), ]
+
+# A continuación, agrupamos los datos por producto y calculamos las unidades totales de cada producto
+productos_por_unidades <- todos_los_tickets %>%
+  group_by(producto) %>%
+  summarise(
+    unidades_total = sum(unidades),
+    .groups = 'drop'
+  )
+# Calcula el número total de tickets
+num_tickets <- length(lista_df)
+
+# Calcula la media de unidades por ticket para cada producto
+productos_por_unidades <- productos_por_unidades %>%
+  mutate(unidades_promedio_por_ticket = unidades_total / num_tickets)
+
+# Ahora, ordenamos los productos por sus unidades promedio por ticket
+productos_ordenados <- productos_por_unidades %>%
+  arrange(desc(unidades_promedio_por_ticket))
+
+# Finalmente, podemos ver los productos que se compran más según la media de unidades por ticket
+top_productos <- head(productos_ordenados)
+top_productos
+
+# Creamos un gráfico
+grafico <- ggplot(top_productos, aes(x = reorder(producto, -unidades_promedio_por_ticket), y = unidades_promedio_por_ticket)) +
+  geom_bar(stat = "identity", fill = "seagreen", width = 0.4) + # cambia el ancho de las barras a 0.5
+  theme_minimal() + # usa un tema minimalista
+  theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 6)) +
+  ylim(0,2) +
+  labs(x = "Producto", y = "Unidades promedio por ticket", title = "Productos más comprados según la media de unidades por ticket")
+grafico
+
+#Si queremos descargarnos el gráfico
+#ggsave("productos_mas_comprados.jpeg", grafico, width = 10, height = 6.5)
+```
+Como se puede observar en la gráfica, las bolsas de plástico son el producto más vendido. Con más de 1.1 bolsas de plástico compradas por ticket. Además productos como la chaparta cristal, el zumo fresco, la leche descnatada, la caracola al cacao o el queso a lonchas de cabra también son los más vendidos entre los tickets analizados.
+
+## ¿Cuántos productos se compran de media en una compra?
+
+Para saber la media de productos por tickets hemos contabilizado todos los productos y a esta cifra le hemos dividido el número total de tickets.
+
+```{r, echo = False}
+# Calculamos de la media de productos por ticket con dos decimales
+media_productos_por_ticket = round(sum(nrow(todos_los_tickets)) / num_tickets, 2)
+```
+Observamos que se obtiene que la media de productos por ticket es de **`r media_productos_por_ticket`**. Además sabemos que esto va relacionado con el precio de cada compra. Cuantos más productos compres, más cara saldrá la compra.
+
+
+## ¿Qué productos cambian de precio (por kg)?
+
+En este análisis, exploraremos cómo los precios de ciertos productos varían en función de su peso en las compras realizadas en Mercadona. Para ello, hemos desarrollado una función especializada que recorre el contenido de varios tickets almacenados en archivos de texto. Esta función está diseñada para identificar y extraer información sobre los productos vendidos por peso, capturando tanto el nombre del producto como su precio por kilogramo. 
+
+```{r}
+extraer_productos_por_peso <- function(rutas_archivos) {
+  # Procesamos cada archivo de ticket proporcionado
+  for (ruta_archivo in rutas_archivos) {
+    # Leemos el contenido del archivo
+    lineas <- readLines(ruta_archivo)
+    
+    for (i in 2:length(lineas)) {
+      # Buscamos las líneas que contienen información de peso y precio por kg
+      if (grepl("kg", lineas[i]) && grepl("€/kg", lineas[i])) {
+        nombre_producto <- gsub("\\d+", "", lineas[i-1])  # Eliminar números para limpiar el nombre
+        nombre_producto <- trimws(nombre_producto)  # Eliminar espacios en blanco sobrantes
+        
+        # Extraemos la información de peso y precio por kg
+        precio_por_kg_info <- regmatches(lineas[i], regexpr("\\d+,\\d+ €/kg", lineas[i]))
+        
+        descripcion_producto <- sprintf("%s %s", nombre_producto, precio_por_kg_info)
+        
+        # Mostramos el nombre del producto y su precio por kg
+        print(descripcion_producto)
+      }
+    }
+  }
+}
+
+```
+
+```{r}
+rutas_tickets <- c("data/20240127 Mercadona 108,33.txt","data/20240115 Mercadona 117,41.txt", "data/20240105 Mercadona 63,19.txt")
+extraer_productos_por_peso(rutas_tickets)
+
+```
+
