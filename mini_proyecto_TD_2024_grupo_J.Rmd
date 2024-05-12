@@ -19,11 +19,41 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introducción
 
-En esta primera parte de la entrega, vamos a importar y a analizar la información que nos aportan una serie de tickets de la compra que se nos proporcionan desde la asignatura.  
+En esta primera parte de la entrega, vamos a importar y a analizar la información que nos aportan una serie de tickets de la compra que se nos proporcionan desde la asignatura.
 
 ## Carga de librerías y datos necesarios para el análisis
 
 Para empezar, se cargan todas las librerías necesarias para la realización del código. Esto se hace de manera más elegante utilizando el paquete pacman de RStudio. A continuación, se realiza la carga del conjunto de datos, los cuales se encuentran en formato .pdf. No obstante, no podemos importarlos desde este formato, así que vamos a convertirlos a .txt mediante una función que hemos creado en Python con la librería PyPDF2. De esta forma, obtenemos los ficheros .txt para poder importarlos en RStudio y trabajar con ellos.
+
+```{r}
+install_common_libraries <- function() {
+  # Lista de librerías comunes
+  common_libraries <- c(
+    "ggplot2",
+    "dplyr",
+    "tidyr",
+    "readr",
+    "stringr",
+    "ggplot2",
+    "lubridate",
+    "magrittr",
+    "knitr",
+    "shiny",
+    "plotly")
+  
+  # Instalar las librerías
+  for (lib in common_libraries) {
+    if (!requireNamespace(lib, quietly = TRUE)) {
+      install.packages(lib, dependencies = TRUE)
+    }
+  }
+  
+  print("Instalación completada.")
+}
+
+# Llama a la función para instalar las librerías comunes
+install_common_libraries()
+```
 
 ## Características generales de los datos
 
@@ -31,7 +61,7 @@ Los datos de los tickets se van a encontrar en listas que contienen dos datafram
 
 ## Análisis de "missing data" en nuestro conjunto de interés
 
-Por suerte, en nuestros conjuntos de datos no hay "missing data", ya que se tratan de tickets de la compra en los cuales cada producto tiene un nombre y precio asignados, y los tickets contienen la cantidad de veces que se añade a la compra. 
+Por suerte, en nuestros conjuntos de datos no hay "missing data", ya que se tratan de tickets de la compra en los cuales cada producto tiene un nombre y precio asignados, y los tickets contienen la cantidad de veces que se añade a la compra.
 
 # Importación de los datos
 
@@ -82,6 +112,7 @@ ticket_g2 <- extraer_informacion("./data/20240109 Mercadona 7,35 Ôé¼.txt")
 #Mostramos la informacion de un ticket, por ejemplo el ticket a:
 ticket_a2
 ```
+
 ```{r}
 separar <- function(df) {
   df <- df %>%
@@ -103,9 +134,6 @@ separar <- function(df) {
   return(df)
 }
 ```
-
-
-
 
 ```{r}
 arreglar_fruta <- function(fruta){
@@ -131,8 +159,6 @@ arreglar_fruta <- function(fruta){
   return(df)
 }
 ```
-
-
 
 ```{r}
 detectar_fruta <- function(a){
@@ -204,24 +230,35 @@ ticket_f
 ticket_g
 ```
 
-
+```{r warning=FALSE}
+lista <- list() 
+carpeta <- "data"
+#Creamos la lista de los ficheros
+fichero<-list.files(path = carpeta, full.names = TRUE, recursive = TRUE, pattern = ".txt")
+df <- as.data.frame(fichero)
+for (i in (1:nrow(df))){
+  lista[i] <- extraer_informacion(df$fichero[i])
+  lista[i] <- detectar_fruta(df$fichero[i])
+  print(lista[i])
+}
+```
 
 # Preguntas
 
-A continuación vamos a plantearnos diferentes cuestiones que nos podrían venir a la cabeza a la hora de hacer un análisis de los tickets de la compra. 
+A continuación vamos a plantearnos diferentes cuestiones que nos podrían venir a la cabeza a la hora de hacer un análisis de los tickets de la compra.
 
-1) ¿Qué productos son los más comprados? 
-2) ¿Cuál es el gasto medio de cada compra?
-3) ¿Qué nos podría dar a entender la frecuencia de compra de cada usuario
-(compras diarias, semanales...)?
-4) ¿Qué productos se compran más según el precio de la compra?
-5) ¿Qué días hay compras más grandes?
-6) ¿Qué productos tienen distintos tipos de IVA?
-7) ¿Cuántos productos se compran de media en una compra?
-8) ¿Hay algún patrón de compra según la estación del año?
-9) ¿Qué productos cambian de precio (por kg)?
+1)  ¿A qué hora del día se hacen más compras?
+
+    ```{r}
+
+    ```
+
+2)  ¿Qué días hay compras más grandes?
+
+    ```{r}
+
+    ```
 
 Además podríamos calcular las distribuciones de compras por categorías de productos para saber qué tipos de productos son los más comprados. A partir de esto también podríamos obtener la distribución de gastos que hace el consumidor a la hora de realizar la compra.
 
 Asimismo, podríamos plantearnos otras cuestiones como el gasto medio de compra, si se hace el pago con efectivo o tarjeta o incluso si los usuarios tienden a ir en coche o a pie (depende de el tamaño de compra, o incluso comodidad).
-
