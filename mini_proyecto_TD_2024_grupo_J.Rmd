@@ -403,7 +403,10 @@ Para saber la media de productos por tickets hemos contabilizado todos los produ
 # Calculamos de la media de productos por ticket con dos decimales
 media_productos_por_ticket = round(sum(nrow(todos_los_tickets)) / num_tickets, 2)
 ```
+
 Observamos que se obtiene que la media de productos por ticket es de **`media_productos_por_ticket`**. Además sabemos que esto va relacionado con el precio de cada compra. Cuantos más productos compres, más cara saldrá la compra.
+
+````{r}
 # Como solo queremos mostrar los 5 primeros, los definimos en otro data frame.
 
 df_precios_plot <- head(df_precios, 5)
@@ -421,50 +424,10 @@ grafica
 
 # Si queremos descargarnos el gráfico:
 
-ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
+# ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
 ```
 
-
-=======
-## ¿Qué se compra más, comida o bebida? 
-
-Vamos a analizar qué se compra más en general por compra: ¿comida o bebida?
-
-```{r}
-# Definimos las categorías que queremos que aparezcan en los tickets de compra.
-
-categorias <- c("comida", "bebida", "otros")
-
-# Creamos una función para clasificar los productos en las diferentes categorías
-
-clasificar_productos <- function(df) {
-  df$categoria <- NA  # Inicializamos la columna de categoría como NA
-  
-  # Clasificación basada en el nombre del producto
-  
-  df$categoria <- ifelse(grepl("[A-Za-z]L$", df$producto), "bebida", 
-                         ifelse(grepl("comida|alimento|plato|ensalada", tolower(df$producto)), "comida", "otros"))
-  
-  return(df)
-}
-
-# Clasificamos los productos en la lista
-
-lista_con_categorias <- lapply(lista, clasificar_productos)
-
-# Creamos la función que va a añadir a cada fichero la columna categoría 
-# con cada producto clasificado.
-
-add_categoria <- function(lista){
-  for (i in 1:length(lista)){
-    lista[[i]] <- clasificar_productos(lista[[i]])
-  }
-  return(lista)
-}
-
-lista_con_categorias <- add_categoria(lista)
-```
-
+Como se puede apreciar en la gráfica, los 5 productos más caros son el escalopín de salmón (9,90 €), el jamón de cebo ibérico de cebo (9,79 €), el aceite de oliva virgen extra (9, 55 €), el filete de rodaballo (9,35 €) y la porción de merluza de cabo (8,77 €). Tiene sentido, ya que estos prodcutos suelen ser de gran calidad, y su producción suele ser costosa.
 
 ## ¿Cuál es el gasto medio de cada compra?
 
@@ -476,7 +439,8 @@ Vamos a probar con un ejemplo usando tres tickets de diferentes precios:
 
 ```{r}
 leer_precio_total <- function(nombres_archivos) {
-  precios_totales <- numeric(length(nombres_archivos)) # Vector para almacenar los precios totales
+  precios_totales <- numeric(length(nombres_archivos)) # Vector para almacenar
+  # los precios totales
   
   for (i in seq_along(nombres_archivos)) {
     nombre_archivo <- nombres_archivos[i]
@@ -507,7 +471,6 @@ leer_precio_total(archivos)
 
 ```
 
->>>>>>> f4a91bbad941ae2d0e076335c172054e2f49f99f
 ## ¿Qué productos se compran más?
 
 Para calcular los productos más vendidos a partir de los tickets de compra, primero vamos a contabilizar la cantidad de cada producto que se compró en cada ticket, lo que nos da un recuento de unidades para cada producto. Tras ello, sumaremos las unidades de cada producto a través de todos los tickets para obtener un total de unidades vendidas para cada producto. Finalmente, ordenamos los productos por el total de unidades vendidas para identificar los productos más vendidos. Es decir, aquellos productos con más unidades vendidas son los productos más vendidos.
@@ -562,6 +525,7 @@ grafico
 #Si queremos descargarnos el gráfico
 #ggsave("productos_mas_comprados.jpeg", grafico, width = 10, height = 6.5)
 ```
+
 Como se puede observar en la gráfica, las bolsas de plástico son el producto más vendido. Con más de 1.1 bolsas de plástico compradas por ticket. Además productos como la chaparta cristal, el zumo fresco, la leche descnatada, la caracola al cacao o el queso a lonchas de cabra también son los más vendidos entre los tickets analizados.
 
 ## ¿Cuántos productos se compran de media en una compra?
