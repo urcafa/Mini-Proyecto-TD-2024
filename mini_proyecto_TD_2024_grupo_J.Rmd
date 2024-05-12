@@ -335,9 +335,10 @@ grafica
 
 # Si queremos descargarnos el gráfico:
 
-ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
+# ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
 ```
 
+Como se puede apreciar en la gráfica, los 5 productos más caros son el escalopín de salmón (9,90 €), el jamón de cebo ibérico de cebo (9,79 €), el aceite de oliva virgen extra (9, 55 €), el filete de rodaballo (9,35 €) y la porción de merluza de cabo (8,77 €). Tiene sentido, ya que estos prodcutos suelen ser de gran calidad, y su producción suele ser costosa.
 
 ## ¿Qué productos se compran más?
 
@@ -426,8 +427,6 @@ grafica
 
 # ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
 ```
-
-Como se puede apreciar en la gráfica, los 5 productos más caros son el escalopín de salmón (9,90 €), el jamón de cebo ibérico de cebo (9,79 €), el aceite de oliva virgen extra (9, 55 €), el filete de rodaballo (9,35 €) y la porción de merluza de cabo (8,77 €). Tiene sentido, ya que estos prodcutos suelen ser de gran calidad, y su producción suele ser costosa.
 
 ## ¿Cuál es el gasto medio de cada compra?
 
