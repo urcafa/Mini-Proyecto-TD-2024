@@ -19,23 +19,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introducción
 
-El objetivo de este proyecto consiste en recoger datos procedentes de distintos tickets de Mercadona para hacer un análisis exploratorio sobre ellos y sacar distintas conclusiones acerca de las compras.
+En esta primera parte de la entrega, vamos a importar y a analizar la información que nos aportan una serie de tickets de la compra que se nos proporcionan desde la asignatura.  
 
 ## Carga de librerías y datos necesarios para el análisis
 
-Para cargar las diversas librerías que vamos a utilizar para trabajar en el proyecto, hemos creado una función que las carga todas a la vez sin tener que llamarlas por separado.
+Para empezar, se cargan todas las librerías necesarias para la realización del código. Esto se hace de manera más elegante utilizando el paquete pacman de RStudio. A continuación, se realiza la carga del conjunto de datos, los cuales se encuentran en formato .pdf. No obstante, no podemos importarlos desde este formato, así que vamos a convertirlos a .txt mediante una función que hemos creado en Python con la librería PyPDF2. De esta forma, obtenemos los ficheros .txt para poder importarlos en RStudio y trabajar con ellos.
 
 ## Características generales de los datos
 
-<<<<<<< HEAD
-Para poder trabajar con los tickets, necesitamos pasarlos de su formato original (.pdf) a fichero de texto (.txt). Para ello, utilizamos una función de Python con la librería PyPDF2 que hace la conversión. 
-
-Una vez ya los tenemos en el formato deseado, procedemos a almacenar los datos en una lista de data frames que transformamos previamente para que todos los datos puedan analizarse de la misma forma (por ejemplo, la fruta se registra de forma diferente al resto de productos en los tickets, pues el precio varía según el peso). 
-
-Cada data frame contiene registros de 4 variables: "producto" (de tipo caracter), "unidades", "precio_completo" y "precio_individual" (estas de tipo numérico). El número de registros depende de cada data frame, ya que el número de productos varía según la compra.
-=======
 Los datos de los tickets se van a encontrar en listas de data frames. Cada dataframe contiene registros de 4 variables: "producto" (de tipo caracter), "unidades", "precio_completo" y "precio_individual" (estas de tipo numérico). El número de registros depende de cada data frame, ya que el número de productos varía según la compra.
->>>>>>> 4c0e3765d1566888e661dfda48e5568ea191c8e4
 
 ## Análisis de "missing data" en nuestro conjunto de interés
 
@@ -43,11 +35,9 @@ Por suerte, en nuestros conjuntos de datos no hay "missing data", ya que se trat
 
 # Importación de los datos
 
-Como ya hemos explicado previamente, hemos convertido nuestros ficheros a .txt desde .pdf. Ahora, creamos funciones que extraigan la información de cada línea del fichero de texto, la separen, y detecten y transformen el formato de la fruta para que encaje con el resto de los datos.
+Como ya hemos explicado previamente, hemos convertido nuestros ficheros a .txt desde .pdf. Ahora, vamos a crear otra función para separar las cadenas de caracteres de los ficheros y así importar los datos en los dataframes de forma que nos resulte más fácil trabajar con ellos. También hemos de crear un par de funciones que lean la fruta de forma correcta, pues el formato es distinto al resto de productos.
 
-Además, abriremos todos los ficheros a la vez desde la carpeta "data", así nos ahorramos definir nuevos tickets que hemos obtenido a lo largo de la realización del proyecto. 
-
-```{r, echo = FALSE}
+```{r}
 # Primero que nada, cargamos las librerías:
  
 library(pacman)
@@ -93,19 +83,8 @@ install_common_libraries <- function() {
 rm(list=ls())
 ```
 
-<<<<<<< HEAD
-```{r, echo = FALSE, include = FALSE}
-# Borramos todas las variables antes de empezar a escribir nuestro código:
-
-rm(list=ls())
-```
-
-
-```{r}
-=======
 
 ```{r} 
->>>>>>> 4c0e3765d1566888e661dfda48e5568ea191c8e4
 extraer_informacion <- function(archivo) {
   # Leemos el texto desde el archivo
   texto <- readLines(archivo, encoding = "UTF-8")
@@ -131,7 +110,6 @@ extraer_informacion <- function(archivo) {
 
 
 ```
-
 ```{r}
 separar <- function(df) {
   df <- df %>%
@@ -264,13 +242,9 @@ ticket_i
 ```
 
 
-<<<<<<< HEAD
-```{r, include = FALSE}
-=======
  
  
 ```{r, include = FALSE} 
->>>>>>> 4c0e3765d1566888e661dfda48e5568ea191c8e4
 lista <- list() 
 carpeta <- "data"
 #Creamos la lista de los ficheros
@@ -292,15 +266,6 @@ lista[1]
 A continuación vamos a plantearnos diferentes cuestiones que nos podrían venir a la cabeza a la hora de hacer un análisis de los tickets de la compra. 
 
 <<<<<<< HEAD
-1) ¿Cuáles son los productos más caros?
-2) ¿En qué momento del día se hacen más compras de media?
-3) ¿Cuáles son los productos más comprados?
-4) ¿Qué días hay compras más grandes?
-5) ¿Qué productos tienen distintos tipos de IVA?  
-6) ¿Cuántos productos se compran de media en una compra?
-7) ¿Qué productos cambian de precio (por kg)?
-=======
-<<<<<<< HEAD
 1) ¿Qué productos son los más comprados? 
 =======
 1) ¿Cuáles son los productos más caros?
@@ -314,7 +279,6 @@ A continuación vamos a plantearnos diferentes cuestiones que nos podrían venir
 7) ¿Cuántos productos se compran de media en una compra?
 8) ¿Hay algún patrón de compra según la estación del año?
 9) ¿Qué productos cambian de precio (por kg)?
->>>>>>> 4c0e3765d1566888e661dfda48e5568ea191c8e4
 
 Además podríamos calcular las distribuciones de compras por categorías de productos para saber qué tipos de productos son los más comprados. A partir de esto también podríamos obtener la distribución de gastos que hace el consumidor a la hora de realizar la compra.
 
@@ -322,9 +286,6 @@ Asimismo, podríamos plantearnos otras cuestiones como el gasto medio de compra,
 
 <<<<<<< HEAD
 =======
-<<<<<<< HEAD
-=======
->>>>>>> 4c0e3765d1566888e661dfda48e5568ea191c8e4
 ## ¿Cuáles son los productos más caros?
 
 Para poder obtener esta información, vamos a trabajar solo con las variables "producto" y "precio_individual". Vamos a extraer estas columnas de los data frames y vamos a combinar toda esta información en un único data frame que ordenaremos posteriormente de forma descendente. Cuando ya tengamos la información ordenada, crearemos un gráfico que muestre los 5 productos más caros.
@@ -401,22 +362,11 @@ grafica
 
 # Si queremos descargarnos el gráfico:
 
-<<<<<<< HEAD
-# ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
-```
-
-Como se puede apreciar en la gráfica, los 5 productos más caros son el escalopín de salmón (9,90 €), el jamón de cebo ibérico de cebo (9,79 €), el aceite de oliva virgen extra (9, 55 €), el filete de rodaballo (9,35 €) y la porción de merluza de cabo (8,77 €). Tiene sentido, ya que estos prodcutos suelen ser de gran calidad, y su producción suele ser costosa.
-
-## ¿En qué momento del día se hacen más compras de media?
-
-## ¿Cuáles son los productos más comprados?
-=======
 ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
 ```
 
 
 ## ¿Qué productos se compran más?
->>>>>>> 4c0e3765d1566888e661dfda48e5568ea191c8e4
 
 Para calcular los productos más vendidos a partir de los tickets de compra, primero vamos a contabilizar la cantidad de cada producto que se compró en cada ticket, lo que nos da un recuento de unidades para cada producto. Tras ello, sumaremos las unidades de cada producto a través de todos los tickets para obtener un total de unidades vendidas para cada producto. Finalmente, ordenamos los productos por el total de unidades vendidas para identificar los productos más vendidos. Es decir, aquellos productos con más unidades vendidas son los productos más vendidos.
 
@@ -472,51 +422,7 @@ grafico
 ```
 Como se puede observar en la gráfica, las bolsas de plástico son el producto más vendido. Con más de 1.1 bolsas de plástico compradas por ticket. Además productos como la chaparta cristal, el zumo fresco, la leche descnatada, la caracola al cacao o el queso a lonchas de cabra también son los más vendidos entre los tickets analizados.
 
-## ¿Qué días hay compras más grandes?
-
-## ¿Qué productos tienen distintos tipos de IVA?  
-
 ## ¿Cuántos productos se compran de media en una compra?
-
-Para obtener esta información, necesitamos analizar cada recibo que se pasa a la función. Para determinar el costo total de la compra, utilizamos las funciones "grep" y "sub", que permiten buscar el texto "TOTAL (€)" en cada línea y extraer el valor correspondiente al total de la compra.
-
-Una vez que hemos extraído los precios de todos los recibos, la función calcula la suma de estos valores y luego la divide por el número total de recibos analizados para obtener el promedio del gasto.
-
-Vamos a probar con un ejemplo usando tres tickets de diferentes precios:
-
-```{r}
-leer_precio_total <- function(nombres_archivos) {
-  precios_totales <- numeric(length(nombres_archivos)) # Vector para almacenar
-  # los precios totales
-  
-  for (i in seq_along(nombres_archivos)) {
-    nombre_archivo <- nombres_archivos[i]
-    lineas <- readLines(nombre_archivo)
-    linea_total <- grep("TOTAL \\(€\\)", lineas, value = TRUE)
-    
-    if (length(linea_total) > 0) {
-      precio_total <- sub(".*TOTAL \\(€\\) ([0-9]+,[0-9]+).*", "\\1", linea_total)
-      precios_totales[i] <- as.numeric(gsub(",", ".", precio_total))
-    } else {
-      precios_totales[i] <- NA
-    }
-  }
-  
-  if (all(is.na(precios_totales))) {
-    cat("No se pudo leer el precio total de ninguno de los archivos.\n")
-  } else {
-    cat("Precios total de cada ticket:\n")
-    print(precios_totales, na.rm = TRUE)
-    precio_medio <- mean(precios_totales, na.rm = TRUE)
-    cat(sprintf("Precio medio de los tickets: %.2f €\n", precio_medio))
-  }
-}
-
-# Usar la función para leer el precio total de múltiples archivos
-archivos <- c("data/20240127 Mercadona 108,33.txt", "data/20240129 Mercadona 79,82.txt", "data/20231216 Mercadona 46,19.txt")
-leer_precio_total(archivos)
-
-```
 
 Para saber la media de productos por tickets hemos contabilizado todos los productos y a esta cifra le hemos dividido el número total de tickets.
 
@@ -524,8 +430,6 @@ Para saber la media de productos por tickets hemos contabilizado todos los produ
 # Calculamos de la media de productos por ticket con dos decimales
 media_productos_por_ticket = round(sum(nrow(todos_los_tickets)) / num_tickets, 2)
 ```
-<<<<<<< HEAD
-=======
 Observamos que se obtiene que la media de productos por ticket es de **`media_productos_por_ticket`**. Además sabemos que esto va relacionado con el precio de cada compra. Cuantos más productos compres, más cara saldrá la compra.
 # Como solo queremos mostrar los 5 primeros, los definimos en otro data frame.
 ```{r}
@@ -700,9 +604,7 @@ media_productos_por_ticket = round(sum(nrow(todos_los_tickets)) / num_tickets, 2
  
 
 Observamos que se obtiene que la media de productos por ticket es de **`r media_productos_por_ticket`**. Además sabemos que esto va relacionado con el precio de cada compra. Cuantos más productos compres, más cara saldrá la compra.
->>>>>>> 4c0e3765d1566888e661dfda48e5568ea191c8e4
 
-Observamos que se obtiene que la media de productos por ticket es de **`media_productos_por_ticket`**. Además sabemos que esto va relacionado con el precio de cada compra. Cuantos más productos compres, más cara saldrá la compra.
 
 ## ¿Qué productos cambian de precio (por kg)?
 
