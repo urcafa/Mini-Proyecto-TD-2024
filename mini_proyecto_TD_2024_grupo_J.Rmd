@@ -242,139 +242,6 @@ ticket_i
 ```
 
 
-
-
-```{r} 
-dfIVA <- function(listaArchivos) {
-    dfl <- list()   
-    
-    for (archivo in listaArchivos) {
-        texto <- suppressWarnings(readLines(archivo, encoding = "windows-1252"))
-        total1 <- texto[grep("^TOTAL \\(", texto)]
-        indice1 <- grep("^IVA BASE", texto)
-        indice2 <- grep("^TOTAL \\d", texto)
-        IVA <- texto[(indice1 + 1):(indice2 - 1)]
-        IVA<- c(IVA,texto[indice2])
-        matrizIVA <- matrix(IVA, ncol = 5, byrow = TRUE)
- 
-        dfIVA <- as.data.frame(matrizIVA)
-         
-        dfl[[archivo]] <- dfIVA
-    }
-     
-    df_final<-bind_rows(dfl)
-    df1 <- df_final %>%
-  rowwise() %>%
-  mutate(veintiuno = ifelse(any(startsWith(c_across(everything()), "21")), 
-                   first(c_across(everything())[startsWith(c_across(everything()), "21")]), 
-                   NA))%>%
-    mutate(diez = ifelse(any(startsWith(c_across(everything()), "10")), 
-                   first(c_across(everything())[startsWith(c_across(everything()), "10")]), 
-                   NA))%>%
-  mutate(cinco = ifelse(any(startsWith(c_across(everything()), "5")), 
-                   first(c_across(everything())[startsWith(c_across(everything()), "5")]), 
-                   NA))%>%
-  mutate(cero = ifelse(any(startsWith(c_across(everything()), "0")), 
-                   first(c_across(everything())[startsWith(c_across(everything()), "0")]), 
-                   NA))%>%
-  mutate(total = ifelse(any(startsWith(c_across(everything()), "TOTAL")), 
-                   first(c_across(everything())[startsWith(c_across(everything()), "TOTAL")]), 
-                   NA))
-  df <-df1%>%
-  select(veintiuno,diez,cinco,cero,total)%>%
-  mutate(base21=substr(veintiuno,5,8))%>%
-  mutate(base10=substr(diez,5,8))%>%
-  mutate(base5=substr(cinco,4,8))%>%
-  mutate(base0=substr(cero,4,8))%>%
-  mutate(totalBase=substr(total,6,(nchar(total)-4)))%>%
-  mutate(imponible21=substr(veintiuno,(nchar(veintiuno)-4),nchar(veintiuno)))%>%
-  mutate(imponible10=substr(diez,(nchar(diez)-4),nchar(diez)))%>%
-  mutate(imponible5=substr(cinco,(nchar(cinco)-4),nchar(cinco)))%>%
-  mutate(imponible0=substr(cero,(nchar(cero)-4),nchar(cero)))%>%
-  mutate(totalImponible=substr(total,(nchar(total)-4),nchar(total)))%>%
-      select(base21,base10,base5,base0,imponible21,imponible10,imponible5,imponible0,totalBase,totalImponible) %>%
-  mutate_all(~ str_replace_all(., ",", "."))%>%
-   mutate_all(as.numeric)
-    
-    return(df)
-}
-carpeta <- "data"
-fichero<-list.files(path = carpeta, full.names = TRUE, recursive = TRUE, pattern = ".txt")
-
-a<-dfIVA(fichero)
-a
- 
-```
-
-
-En españa el IVA se divide en tres tipos, general(20%), reducido(10%) y superreducido(5%) tambien estoy teniendo en cuenta como otro tipo el 0%, es decir, los productos a los que no se les aplica IVA.
-Para empezar a estudiar los datos en boxplot puede ser muy util ya que sirve para hacerse una idea de los valores y detectar posibles outliers.
-
-
-En este grafico se nota que el IVA reducido es el que tiene un rango de valores mas amplio, y tambien se pueden observar unas pocas observaciones atípicas, pero no me centraré en estudiarlas porque no influyen demasiado en los siguientes gráficos y no son outliers, simplemente compras en las que se ha gastado un poco mas de dinero que el promedio.
-
-```{r}
-
-
-df_long <- gather(a, key = "Variable", value = "Valor")
-
-ggplot(df_long, aes(x = Variable, y = Valor)) +
-  geom_boxplot(fill="seagreen") +
-  labs(title = "Boxplot de cada Variable", x = "Tipo IVA", y = "Valores")+ 
-  theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 9))
-```
-
-
-
-
-En la siguiente grafica se puede observar el precio total al que se le aplica cada tipo de IVA, es decir, de los 1598.87 euros, que es la suma del precio de todos los tickets, se puede ver como principalmente se aplica el IVA reducido(10%)
-```{r}
-
-graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$base0, na.rm = T),sum(a$base5, na.rm = T),sum(a$base10, na.rm = T),sum(a$base21, na.rm = T)))  
-graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))
-ggplot(graf, aes(x = tipo, y = cantidad)) +
-  geom_bar(stat = "identity",fill="seagreen") +
-  labs(x = "Tipo", y = "Cantidad", title = "Precio del total al que se le aplica cada tipo de IVA")
-print(sum(a$totalBase))
-```
-
-
-
-
-Para continuar, en esta grafica se puede observar el total imponible de cada tipo de IVA, es decir, de todo el dinero gastado 127.56 euros se han cobrado por el IVA y la mayoria de dinero se ha recaudado por el IVA reducido(10%)
-
-
-```{r}
-graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$imponible0, na.rm = T),sum(a$imponible5, na.rm = T),sum(a$imponible10, na.rm = T),sum(a$imponible21, na.rm = T)))  
-graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))
-ggplot(graf, aes(x = tipo, y = cantidad)) +
-  geom_bar(stat = "identity", fill = "seagreen") +
-  labs(x = "Tipo", y = "Precio", title = "Cantidad imponible por tipo")
-print(sum(a$totalImponible))
-```
-
-
-
-
-
-Para terminar, la siguiente grafica muestra la media de cada tipo de IVA tanto el total, como la parte imponible.
-
-```{r}
-medias<-a %>%group_by()%>% 
-  summarise("Total 21%"= mean(base21, na.rm = TRUE),"Total 10%"= mean(base10, na.rm = TRUE),"Total 5%"= mean(base5, na.rm = TRUE),"Total 0%"= mean(base0, na.rm = TRUE),"General(20)"= mean(imponible21, na.rm = TRUE),"reducido(10)"= mean(imponible10, na.rm = TRUE),"superreducido(5)"= mean(imponible5, na.rm = TRUE))
-mediasl <- gather(medias, key = "Variable", value = "Valor")
-mediasl$Variable <- factor(mediasl$Variable, levels = mediasl$Variable)
-mediasl$Categoria <- ifelse(mediasl$Variable %in% c("Total 21%", "Total 10%", "Total 5%", "Total 0%"), "Total", "Imponible")
-ggplot(mediasl, aes(x = Variable, y = Valor, fill = Categoria)) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = c("Total" = "#CC6666", "Imponible" = "#66CCCC")) +
-  labs(title = "Media del IVA", x = "Precio", y = "Tipo de IVA")+ 
-  theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 9))
- 
-```
-
-
- 
  
  
 ```{r, include = FALSE} 
@@ -391,6 +258,7 @@ for (i in (1:nrow(df))){
 lista[1]
 
 ```
+
 
 
 # Preguntas
@@ -774,4 +642,138 @@ rutas_tickets <- c("data/20240127 Mercadona 108,33.txt","data/20240115 Mercadona
 extraer_productos_por_peso(rutas_tickets)
 
 ```
+ 
+ 
+ 
+
+```{r} 
+dfIVA <- function(listaArchivos) {
+    dfl <- list()   
+    
+    for (archivo in listaArchivos) {
+        texto <- suppressWarnings(readLines(archivo, encoding = "windows-1252"))
+        total1 <- texto[grep("^TOTAL \\(", texto)]
+        indice1 <- grep("^IVA BASE", texto)
+        indice2 <- grep("^TOTAL \\d", texto)
+        IVA <- texto[(indice1 + 1):(indice2 - 1)]
+        IVA<- c(IVA,texto[indice2])
+        matrizIVA <- matrix(IVA, ncol = 5, byrow = TRUE)
+ 
+        dfIVA <- as.data.frame(matrizIVA)
+         
+        dfl[[archivo]] <- dfIVA
+    }
+     
+    df_final<-bind_rows(dfl)
+    df1 <- df_final %>%
+  rowwise() %>%
+  mutate(veintiuno = ifelse(any(startsWith(c_across(everything()), "21")), 
+                   first(c_across(everything())[startsWith(c_across(everything()), "21")]), 
+                   NA))%>%
+    mutate(diez = ifelse(any(startsWith(c_across(everything()), "10")), 
+                   first(c_across(everything())[startsWith(c_across(everything()), "10")]), 
+                   NA))%>%
+  mutate(cinco = ifelse(any(startsWith(c_across(everything()), "5")), 
+                   first(c_across(everything())[startsWith(c_across(everything()), "5")]), 
+                   NA))%>%
+  mutate(cero = ifelse(any(startsWith(c_across(everything()), "0")), 
+                   first(c_across(everything())[startsWith(c_across(everything()), "0")]), 
+                   NA))%>%
+  mutate(total = ifelse(any(startsWith(c_across(everything()), "TOTAL")), 
+                   first(c_across(everything())[startsWith(c_across(everything()), "TOTAL")]), 
+                   NA))
+  df <-df1%>%
+  select(veintiuno,diez,cinco,cero,total)%>%
+  mutate(base21=substr(veintiuno,5,8))%>%
+  mutate(base10=substr(diez,5,8))%>%
+  mutate(base5=substr(cinco,4,8))%>%
+  mutate(base0=substr(cero,4,8))%>%
+  mutate(totalBase=substr(total,6,(nchar(total)-4)))%>%
+  mutate(imponible21=substr(veintiuno,(nchar(veintiuno)-4),nchar(veintiuno)))%>%
+  mutate(imponible10=substr(diez,(nchar(diez)-4),nchar(diez)))%>%
+  mutate(imponible5=substr(cinco,(nchar(cinco)-4),nchar(cinco)))%>%
+  mutate(imponible0=substr(cero,(nchar(cero)-4),nchar(cero)))%>%
+  mutate(totalImponible=substr(total,(nchar(total)-4),nchar(total)))%>%
+      select(base21,base10,base5,base0,imponible21,imponible10,imponible5,imponible0,totalBase,totalImponible) %>%
+  mutate_all(~ str_replace_all(., ",", "."))%>%
+   mutate_all(as.numeric)
+    
+    return(df)
+}
+carpeta <- "data"
+fichero<-list.files(path = carpeta, full.names = TRUE, recursive = TRUE, pattern = ".txt")
+
+a<-dfIVA(fichero)
+a
+ 
+```
+
+
+En españa el IVA se divide en tres tipos, general(20%), reducido(10%) y superreducido(5%) tambien estoy teniendo en cuenta como otro tipo el 0%, es decir, los productos a los que no se les aplica IVA.
+Para empezar a estudiar los datos en boxplot puede ser muy util ya que sirve para hacerse una idea de los valores y detectar posibles outliers.
+
+
+En este grafico se nota que el IVA reducido es el que tiene un rango de valores mas amplio, y tambien se pueden observar unas pocas observaciones atípicas, pero no me centraré en estudiarlas porque no influyen demasiado en los siguientes gráficos y no son outliers, simplemente compras en las que se ha gastado un poco mas de dinero que el promedio.
+
+```{r}
+
+
+df_long <- gather(a, key = "Variable", value = "Valor")
+
+ggplot(df_long, aes(x = Variable, y = Valor)) +
+  geom_boxplot(fill="seagreen") +
+  labs(title = "Boxplot de cada Variable", x = "Tipo IVA", y = "Valores")+ 
+  theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 9))
+```
+
+
+
+
+En la siguiente grafica se puede observar el precio total al que se le aplica cada tipo de IVA, es decir, de los 1598.87 euros, que es la suma del precio de todos los tickets, se puede ver como principalmente se aplica el IVA reducido(10%)
+```{r}
+
+graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$base0, na.rm = T),sum(a$base5, na.rm = T),sum(a$base10, na.rm = T),sum(a$base21, na.rm = T)))  
+graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))
+ggplot(graf, aes(x = tipo, y = cantidad)) +
+  geom_bar(stat = "identity",fill="seagreen") +
+  labs(x = "Tipo", y = "Cantidad", title = "Precio del total al que se le aplica cada tipo de IVA")
+print(sum(a$totalBase))
+```
+
+
+
+
+Para continuar, en esta grafica se puede observar el total imponible de cada tipo de IVA, es decir, de todo el dinero gastado 127.56 euros se han cobrado por el IVA y la mayoria de dinero se ha recaudado por el IVA reducido(10%)
+
+
+```{r}
+graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$imponible0, na.rm = T),sum(a$imponible5, na.rm = T),sum(a$imponible10, na.rm = T),sum(a$imponible21, na.rm = T)))  
+graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))
+ggplot(graf, aes(x = tipo, y = cantidad)) +
+  geom_bar(stat = "identity", fill = "seagreen") +
+  labs(x = "Tipo", y = "Precio", title = "Cantidad imponible por tipo")
+print(sum(a$totalImponible))
+```
+
+
+
+
+
+Para terminar, la siguiente grafica muestra la media de cada tipo de IVA tanto el total, como la parte imponible.
+
+```{r}
+medias<-a %>%group_by()%>% 
+  summarise("Total 21%"= mean(base21, na.rm = TRUE),"Total 10%"= mean(base10, na.rm = TRUE),"Total 5%"= mean(base5, na.rm = TRUE),"Total 0%"= mean(base0, na.rm = TRUE),"General(20)"= mean(imponible21, na.rm = TRUE),"reducido(10)"= mean(imponible10, na.rm = TRUE),"superreducido(5)"= mean(imponible5, na.rm = TRUE))
+mediasl <- gather(medias, key = "Variable", value = "Valor")
+mediasl$Variable <- factor(mediasl$Variable, levels = mediasl$Variable)
+mediasl$Categoria <- ifelse(mediasl$Variable %in% c("Total 21%", "Total 10%", "Total 5%", "Total 0%"), "Total", "Imponible")
+ggplot(mediasl, aes(x = Variable, y = Valor, fill = Categoria)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("Total" = "#CC6666", "Imponible" = "#66CCCC")) +
+  labs(title = "Media del IVA", x = "Precio", y = "Tipo de IVA")+ 
+  theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 9))
+ 
+```
+
+
  
