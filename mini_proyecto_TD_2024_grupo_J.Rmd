@@ -19,15 +19,19 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introducción
 
-En esta primera parte de la entrega, vamos a importar y a analizar la información que nos aportan una serie de tickets de la compra que se nos proporcionan desde la asignatura.  
+El objetivo de este proyecto consiste en recoger datos procedentes de distintos tickets de Mercadona para hacer un análisis exploratorio sobre ellos y sacar distintas conclusiones acerca de las compras.
 
 ## Carga de librerías y datos necesarios para el análisis
 
-Para empezar, se cargan todas las librerías necesarias para la realización del código. Esto se hace de manera más elegante utilizando el paquete pacman de RStudio. A continuación, se realiza la carga del conjunto de datos, los cuales se encuentran en formato .pdf. No obstante, no podemos importarlos desde este formato, así que vamos a convertirlos a .txt mediante una función que hemos creado en Python con la librería PyPDF2. De esta forma, obtenemos los ficheros .txt para poder importarlos en RStudio y trabajar con ellos.
+Para cargar las diversas librerías que vamos a utilizar para trabajar en el proyecto, hemos creado una función que las carga todas a la vez sin tener que llamarlas por separado.
 
 ## Características generales de los datos
 
-Los datos de los tickets se van a encontrar en listas de data frames. Cada dataframe contiene registros de 4 variables: "producto" (de tipo caracter), "unidades", "precio_completo" y "precio_individual" (estas de tipo numérico). El número de registros depende de cada data frame, ya que el número de productos varía según la compra.
+Para poder trabajar con los tickets, necesitamos pasarlos de su formato original (.pdf) a fichero de texto (.txt). Para ello, utilizamos una función de Python con la librería PyPDF2 que hace la conversión. 
+
+Una vez ya los tenemos en el formato deseado, procedemos a almacenar los datos en una lista de data frames que transformamos previamente para que todos los datos puedan analizarse de la misma forma (por ejemplo, la fruta se registra de forma diferente al resto de productos en los tickets, pues el precio varía según el peso). 
+
+Cada data frame contiene registros de 4 variables: "producto" (de tipo caracter), "unidades", "precio_completo" y "precio_individual" (estas de tipo numérico). El número de registros depende de cada data frame, ya que el número de productos varía según la compra.
 
 ## Análisis de "missing data" en nuestro conjunto de interés
 
@@ -35,9 +39,11 @@ Por suerte, en nuestros conjuntos de datos no hay "missing data", ya que se trat
 
 # Importación de los datos
 
-Como ya hemos explicado previamente, hemos convertido nuestros ficheros a .txt desde .pdf. Ahora, vamos a crear otra función para separar las cadenas de caracteres de los ficheros y así importar los datos en los dataframes de forma que nos resulte más fácil trabajar con ellos. También hemos de crear un par de funciones que lean la fruta de forma correcta, pues el formato es distinto al resto de productos.
+Como ya hemos explicado previamente, hemos convertido nuestros ficheros a .txt desde .pdf. Ahora, creamos funciones que extraigan la información de cada línea del fichero de texto, la separen, y detecten y transformen el formato de la fruta para que encaje con el resto de los datos.
 
-```{r}
+Además, abriremos todos los ficheros a la vez desde la carpeta "data", así nos ahorramos definir nuevos tickets que hemos obtenido a lo largo de la realización del proyecto. 
+
+```{r, echo = FALSE}
 # Primero que nada, cargamos las librerías:
 
 install_common_libraries <- function() {
@@ -112,6 +118,7 @@ extraer_informacion <- function(archivo) {
 # En caso de que no esté especificado en el ticket alguna de esta información,
 # se indicará que no ha podido ser encontrada
 ```
+
 ```{r}
 separar <- function(df) {
   df <- df %>%
@@ -247,13 +254,12 @@ for (i in (1:nrow(df))){
 A continuación vamos a plantearnos diferentes cuestiones que nos podrían venir a la cabeza a la hora de hacer un análisis de los tickets de la compra. 
 
 1) ¿Cuáles son los productos más caros?
-2) ¿Cuál es el gasto medio de cada compra?
-3) ¿En qué momento del día se hacen más compras de media?
-4) ¿Qué productos se compran más según el precio de la compra?
-5) ¿Qué días hay compras más grandes?
-6) ¿Qué productos tienen distintos tipos de IVA?  
-7) ¿Cuántos productos se compran de media en una compra?
-8) ¿Qué productos cambian de precio (por kg)?
+2) ¿En qué momento del día se hacen más compras de media?
+3) ¿Cuáles son los productos más comprados?
+4) ¿Qué días hay compras más grandes?
+5) ¿Qué productos tienen distintos tipos de IVA?  
+6) ¿Cuántos productos se compran de media en una compra?
+7) ¿Qué productos cambian de precio (por kg)?
 
 Además podríamos calcular las distribuciones de compras por categorías de productos para saber qué tipos de productos son los más comprados. A partir de esto también podríamos obtener la distribución de gastos que hace el consumidor a la hora de realizar la compra.
 
@@ -340,7 +346,9 @@ grafica
 
 Como se puede apreciar en la gráfica, los 5 productos más caros son el escalopín de salmón (9,90 €), el jamón de cebo ibérico de cebo (9,79 €), el aceite de oliva virgen extra (9, 55 €), el filete de rodaballo (9,35 €) y la porción de merluza de cabo (8,77 €). Tiene sentido, ya que estos prodcutos suelen ser de gran calidad, y su producción suele ser costosa.
 
-## ¿Qué productos se compran más?
+## ¿En qué momento del día se hacen más compras de media?
+
+## ¿Cuáles son los productos más comprados?
 
 Para calcular los productos más vendidos a partir de los tickets de compra, primero vamos a contabilizar la cantidad de cada producto que se compró en cada ticket, lo que nos da un recuento de unidades para cada producto. Tras ello, sumaremos las unidades de cada producto a través de todos los tickets para obtener un total de unidades vendidas para cada producto. Finalmente, ordenamos los productos por el total de unidades vendidas para identificar los productos más vendidos. Es decir, aquellos productos con más unidades vendidas son los productos más vendidos.
 
@@ -396,39 +404,11 @@ grafico
 ```
 Como se puede observar en la gráfica, las bolsas de plástico son el producto más vendido. Con más de 1.1 bolsas de plástico compradas por ticket. Además productos como la chaparta cristal, el zumo fresco, la leche descnatada, la caracola al cacao o el queso a lonchas de cabra también son los más vendidos entre los tickets analizados.
 
+## ¿Qué días hay compras más grandes?
+
+## ¿Qué productos tienen distintos tipos de IVA?  
+
 ## ¿Cuántos productos se compran de media en una compra?
-
-Para saber la media de productos por tickets hemos contabilizado todos los productos y a esta cifra le hemos dividido el número total de tickets.
-
-```{r, echo = False}
-# Calculamos de la media de productos por ticket con dos decimales
-media_productos_por_ticket = round(sum(nrow(todos_los_tickets)) / num_tickets, 2)
-```
-
-Observamos que se obtiene que la media de productos por ticket es de **`media_productos_por_ticket`**. Además sabemos que esto va relacionado con el precio de cada compra. Cuantos más productos compres, más cara saldrá la compra.
-
-````{r}
-# Como solo queremos mostrar los 5 primeros, los definimos en otro data frame.
-
-df_precios_plot <- head(df_precios, 5)
-
-grafica <- ggplot(df_precios_plot, aes(x = reorder(producto, precio_individual),
-                                       y = precio_individual)) +
-  geom_bar(stat = "identity", fill = "seagreen", width = 0.5) +
-  labs(title = "Precios de los 5 productos más caros",
-       x = "Producto",
-       y = "Precio individual") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-grafica
-
-# Si queremos descargarnos el gráfico:
-
-# ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
-```
-
-## ¿Cuál es el gasto medio de cada compra?
 
 Para obtener esta información, necesitamos analizar cada recibo que se pasa a la función. Para determinar el costo total de la compra, utilizamos las funciones "grep" y "sub", que permiten buscar el texto "TOTAL (€)" en cada línea y extraer el valor correspondiente al total de la compra.
 
@@ -470,73 +450,14 @@ leer_precio_total(archivos)
 
 ```
 
-## ¿Qué productos se compran más?
-
-Para calcular los productos más vendidos a partir de los tickets de compra, primero vamos a contabilizar la cantidad de cada producto que se compró en cada ticket, lo que nos da un recuento de unidades para cada producto. Tras ello, sumaremos las unidades de cada producto a través de todos los tickets para obtener un total de unidades vendidas para cada producto. Finalmente, ordenamos los productos por el total de unidades vendidas para identificar los productos más vendidos. Es decir, aquellos productos con más unidades vendidas son los productos más vendidos.
-
-```{r, echo=FALSE, warning=FALSE}
-library(ggplot2)
-# Utilizamos la función que ya tenemos para obtener la lista de dataframes
-lista_df <- lista
-
-# Unimos todos los dataframes de los tickets en uno solo
-todos_los_tickets <- do.call(rbind, lista_df)
-# Eliminamos la última fila del dataframe
-todos_los_tickets <- head(todos_los_tickets, -1)
-
-# Convertimos la columna 'unidades' a numérica
-todos_los_tickets$unidades <- as.numeric(as.character(todos_los_tickets$unidades))
-
-# Eliminamos las filas con NA (que son las filas que no se pudieron convertir a numérico)
-todos_los_tickets <- todos_los_tickets[!is.na(todos_los_tickets$unidades), ]
-
-# A continuación, agrupamos los datos por producto y calculamos las unidades totales de cada producto
-productos_por_unidades <- todos_los_tickets %>%
-  group_by(producto) %>%
-  summarise(
-    unidades_total = sum(unidades),
-    .groups = 'drop'
-  )
-# Calcula el número total de tickets
-num_tickets <- length(lista_df)
-
-# Calcula la media de unidades por ticket para cada producto
-productos_por_unidades <- productos_por_unidades %>%
-  mutate(unidades_promedio_por_ticket = unidades_total / num_tickets)
-
-# Ahora, ordenamos los productos por sus unidades promedio por ticket
-productos_ordenados <- productos_por_unidades %>%
-  arrange(desc(unidades_promedio_por_ticket))
-
-# Finalmente, podemos ver los productos que se compran más según la media de unidades por ticket
-top_productos <- head(productos_ordenados)
-top_productos
-
-# Creamos un gráfico
-grafico <- ggplot(top_productos, aes(x = reorder(producto, -unidades_promedio_por_ticket), y = unidades_promedio_por_ticket)) +
-  geom_bar(stat = "identity", fill = "seagreen", width = 0.4) + # cambia el ancho de las barras a 0.5
-  theme_minimal() + # usa un tema minimalista
-  theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 6)) +
-  ylim(0,2) +
-  labs(x = "Producto", y = "Unidades promedio por ticket", title = "Productos más comprados según la media de unidades por ticket")
-grafico
-
-#Si queremos descargarnos el gráfico
-#ggsave("productos_mas_comprados.jpeg", grafico, width = 10, height = 6.5)
-```
-
-Como se puede observar en la gráfica, las bolsas de plástico son el producto más vendido. Con más de 1.1 bolsas de plástico compradas por ticket. Además productos como la chaparta cristal, el zumo fresco, la leche descnatada, la caracola al cacao o el queso a lonchas de cabra también son los más vendidos entre los tickets analizados.
-
-## ¿Cuántos productos se compran de media en una compra?
-
 Para saber la media de productos por tickets hemos contabilizado todos los productos y a esta cifra le hemos dividido el número total de tickets.
 
 ```{r, echo = False}
 # Calculamos de la media de productos por ticket con dos decimales
 media_productos_por_ticket = round(sum(nrow(todos_los_tickets)) / num_tickets, 2)
 ```
-Observamos que se obtiene que la media de productos por ticket es de **`r media_productos_por_ticket`**. Además sabemos que esto va relacionado con el precio de cada compra. Cuantos más productos compres, más cara saldrá la compra.
 
+Observamos que se obtiene que la media de productos por ticket es de **`media_productos_por_ticket`**. Además sabemos que esto va relacionado con el precio de cada compra. Cuantos más productos compres, más cara saldrá la compra.
 
 ## ¿Qué productos cambian de precio (por kg)?
 
