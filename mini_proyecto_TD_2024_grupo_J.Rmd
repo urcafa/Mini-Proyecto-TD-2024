@@ -96,21 +96,6 @@ extraer_informacion <- function(archivo) {
   
   return(df)
 }
-
-ticket_a2 <- extraer_informacion("./data/20231218 Mercadona 60,47 Ôé¼.txt")
-ticket_b2 <- extraer_informacion("./data/20231224 Mercadona 37,49 Ôé¼.txt")
-ticket_c2 <- extraer_informacion("./data/20231226 Mercadona 25,83 Ôé¼.txt")
-ticket_c2 <- extraer_informacion("./data/20231230 Mercadona 66,30 Ôé¼.txt")
-ticket_d2 <- extraer_informacion("./data/20240102 Mercadona 70,04 Ôé¼.txt")
-ticket_e2 <- extraer_informacion("./data/20240108 Mercadona 83,73 Ôé¼.txt")
-ticket_f2 <- extraer_informacion("./data/20240109 Mercadona 7,35 Ôé¼.txt")
-ticket_g2 <- extraer_informacion("./data/20240109 Mercadona 7,35 Ôé¼.txt")
-
-# En caso de que no esté especificado en el ticket alguna de esta información,
-# se indicará que no ha podido ser encontrada
-
-#Mostramos la informacion de un ticket, por ejemplo el ticket a:
-ticket_a2
 ```
 
 ```{r}
@@ -165,7 +150,13 @@ detectar_fruta <- function(a){
   texto <-  suppressWarnings(readLines(a, encoding = "latin1"))
   # Con UTF-8 daba error en algunos caracteres
   
-  productos <- texto[8:(length(texto)-11)]
+  indice_parking <- grep("^1PARKING", texto)
+  
+  if (length(indice_parking) == 0) {
+    productos <- texto[8:(length(texto) - 11)]
+  } else {
+    productos <- texto[8:(indice_parking - 1)]
+  }
   # Seleccionamos solo las filas con productos y creamos un dataframe
 
   while (!grepl("^\\d", tail(productos, 1))) {
@@ -211,36 +202,31 @@ detectar_fruta <- function(a){
   # Devuelve un dataframe con producos y otro con las frutas
 
 }
-
-ticket_a <- detectar_fruta("./data/20231218 Mercadona 60,47 Ôé¼.txt")
-ticket_b <- detectar_fruta("./data/20231224 Mercadona 37,49 Ôé¼.txt")
-ticket_c <- detectar_fruta("./data/20231226 Mercadona 25,83 Ôé¼.txt")
-ticket_d <- detectar_fruta("./data/20231230 Mercadona 66,30 Ôé¼.txt")
-ticket_e <- detectar_fruta("./data/20240102 Mercadona 70,04 Ôé¼.txt")
-ticket_f <- detectar_fruta("./data/20240108 Mercadona 83,73 Ôé¼.txt")
-ticket_g <- detectar_fruta("./data/20240109 Mercadona 7,35 Ôé¼.txt")
-
-
-ticket_a
-ticket_b
-ticket_c
-ticket_d
-ticket_e
-ticket_f
-ticket_g
 ```
 
 ```{r warning=FALSE}
 lista <- list() 
 carpeta <- "data"
+
 #Creamos la lista de los ficheros
-fichero<-list.files(path = carpeta, full.names = TRUE, recursive = TRUE, pattern = ".txt")
-df <- as.data.frame(fichero)
-for (i in (1:nrow(df))){
-  lista[i] <- extraer_informacion(df$fichero[i])
-  lista[i] <- detectar_fruta(df$fichero[i])
-  print(lista[i])
+ficheros <- list.files(path = carpeta, full.names = TRUE, recursive = TRUE, pattern = ".txt")
+for (fichero in ficheros){
+    # Leer el archivo txt
+  ticket <- read.table(fichero, header = TRUE, stringsAsFactors = FALSE, sep = "\t")
+  # Agregar el dataframe del ticket a la lista
+  lista[[length(lista) + 1]] <- ticket
 }
+
+# Combinar todos los dataframes en uno solo
+df_tickets <- do.call(rbind, lista)
+
+# Ver el dataframe combinado
+print(df_tickets)
+  
+  
+  
+  
+
 ```
 
 # Preguntas
