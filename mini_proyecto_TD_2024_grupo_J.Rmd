@@ -39,11 +39,10 @@ Como ya hemos explicado previamente, hemos convertido nuestros ficheros a .txt d
 
 ```{r}
 # Primero que nada, cargamos las librerías:
-
-<<<<<<< HEAD
+ 
 library(pacman)
 p_load(dplyr, stringr,ggplot2,tidyr)
-=======
+ 
 install_common_libraries <- function() {
   # Lista de librerías comunes
   common_libraries <- c(
@@ -76,21 +75,16 @@ install_common_libraries <- function() {
   }
   
   print("Instalación completada.")
-}
->>>>>>> 255470c808e321d81227200aa5c6197a08111916
+} 
 
-
-<<<<<<< HEAD
-=======
-```{r, echo = FALSE, include = FALSE}
+  
 # Borramos todas las variables antes de empezar a escribir nuestro código:
 
 rm(list=ls())
 ```
 
 
-```{r}
->>>>>>> 255470c808e321d81227200aa5c6197a08111916
+```{r} 
 extraer_informacion <- function(archivo) {
   # Leemos el texto desde el archivo
   texto <- readLines(archivo, encoding = "UTF-8")
@@ -325,7 +319,7 @@ En este grafico se nota que el IVA reducido es el que tiene un rango de valores 
 df_long <- gather(a, key = "Variable", value = "Valor")
 
 ggplot(df_long, aes(x = Variable, y = Valor)) +
-  geom_boxplot(fill="#66CC99") +
+  geom_boxplot(fill="seagreen") +
   labs(title = "Boxplot de cada Variable", x = "Tipo IVA", y = "Valores")+ 
   theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 9))
 ```
@@ -339,7 +333,7 @@ En la siguiente grafica se puede observar el precio total al que se le aplica ca
 graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$base0, na.rm = T),sum(a$base5, na.rm = T),sum(a$base10, na.rm = T),sum(a$base21, na.rm = T)))  
 graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))
 ggplot(graf, aes(x = tipo, y = cantidad)) +
-  geom_bar(stat = "identity",fill="#CC6666") +
+  geom_bar(stat = "identity",fill="seagreen") +
   labs(x = "Tipo", y = "Cantidad", title = "Precio del total al que se le aplica cada tipo de IVA")
 print(sum(a$totalBase))
 ```
@@ -354,7 +348,7 @@ Para continuar, en esta grafica se puede observar el total imponible de cada tip
 graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$imponible0, na.rm = T),sum(a$imponible5, na.rm = T),sum(a$imponible10, na.rm = T),sum(a$imponible21, na.rm = T)))  
 graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))
 ggplot(graf, aes(x = tipo, y = cantidad)) +
-  geom_bar(stat = "identity", fill = "#9999CC") +
+  geom_bar(stat = "identity", fill = "seagreen") +
   labs(x = "Tipo", y = "Precio", title = "Cantidad imponible por tipo")
 print(sum(a$totalImponible))
 ```
@@ -381,13 +375,9 @@ ggplot(mediasl, aes(x = Variable, y = Valor, fill = Categoria)) +
 
 
  
-
-<<<<<<< HEAD
-
-```{r}
-=======
-```{r, include = FALSE}
->>>>>>> 255470c808e321d81227200aa5c6197a08111916
+ 
+ 
+```{r, include = FALSE} 
 lista <- list() 
 carpeta <- "data"
 #Creamos la lista de los ficheros
@@ -574,7 +564,7 @@ media_productos_por_ticket = round(sum(nrow(todos_los_tickets)) / num_tickets, 2
 ```
 Observamos que se obtiene que la media de productos por ticket es de **`media_productos_por_ticket`**. Además sabemos que esto va relacionado con el precio de cada compra. Cuantos más productos compres, más cara saldrá la compra.
 # Como solo queremos mostrar los 5 primeros, los definimos en otro data frame.
-
+```{r}
 df_precios_plot <- head(df_precios, 5)
 
 grafica <- ggplot(df_precios_plot, aes(x = reorder(producto, precio_individual),
@@ -593,11 +583,11 @@ grafica
 ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
 ```
 
-
-=======
+ 
 ## ¿Qué se compra más, comida o bebida? 
 
 Vamos a analizar qué se compra más en general por compra: ¿comida o bebida?
+ 
 
 ```{r}
 # Definimos las categorías que queremos que aparezcan en los tickets de compra.
@@ -633,7 +623,6 @@ add_categoria <- function(lista){
 
 lista_con_categorias <- add_categoria(lista)
 ```
-
 
 ## ¿Cuál es el gasto medio de cada compra?
 
@@ -675,11 +664,12 @@ archivos <- c("data/20240127 Mercadona 108,33.txt", "data/20240129 Mercadona 79,
 leer_precio_total(archivos)
 
 ```
-
->>>>>>> f4a91bbad941ae2d0e076335c172054e2f49f99f
+ 
 ## ¿Qué productos se compran más?
 
 Para calcular los productos más vendidos a partir de los tickets de compra, primero vamos a contabilizar la cantidad de cada producto que se compró en cada ticket, lo que nos da un recuento de unidades para cada producto. Tras ello, sumaremos las unidades de cada producto a través de todos los tickets para obtener un total de unidades vendidas para cada producto. Finalmente, ordenamos los productos por el total de unidades vendidas para identificar los productos más vendidos. Es decir, aquellos productos con más unidades vendidas son los productos más vendidos.
+
+
 
 ```{r, echo=FALSE, warning=FALSE}
 library(ggplot2)
@@ -731,6 +721,7 @@ grafico
 #Si queremos descargarnos el gráfico
 #ggsave("productos_mas_comprados.jpeg", grafico, width = 10, height = 6.5)
 ```
+
 Como se puede observar en la gráfica, las bolsas de plástico son el producto más vendido. Con más de 1.1 bolsas de plástico compradas por ticket. Además productos como la chaparta cristal, el zumo fresco, la leche descnatada, la caracola al cacao o el queso a lonchas de cabra también son los más vendidos entre los tickets analizados.
 
 ## ¿Cuántos productos se compran de media en una compra?
@@ -741,6 +732,9 @@ Para saber la media de productos por tickets hemos contabilizado todos los produ
 # Calculamos de la media de productos por ticket con dos decimales
 media_productos_por_ticket = round(sum(nrow(todos_los_tickets)) / num_tickets, 2)
 ```
+
+ 
+
 Observamos que se obtiene que la media de productos por ticket es de **`r media_productos_por_ticket`**. Además sabemos que esto va relacionado con el precio de cada compra. Cuantos más productos compres, más cara saldrá la compra.
 
 
@@ -780,5 +774,4 @@ rutas_tickets <- c("data/20240127 Mercadona 108,33.txt","data/20240115 Mercadona
 extraer_productos_por_peso(rutas_tickets)
 
 ```
-
->>>>>>> 255470c808e321d81227200aa5c6197a08111916
+ 
