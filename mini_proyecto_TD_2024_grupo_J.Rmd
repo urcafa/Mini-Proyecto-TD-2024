@@ -345,6 +345,9 @@ grafica
 ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
 ```
 
+Como podemos observar en la gráfica, los cinco productos más caros son: el escalopín de salmón (9,90 €), el jamón de cebo ibérico (9,79 €), el aceite de oliva virgen extra (9,55 €), filete de rodaballo (9.35 €) y una porción de merluza de cabo (8,77 €). Estos resultados tienen sentido, ya que los productos mostrados son de alta calidad y de producción costosa. También podemos apreciar que se encuentran más o menos en el mismo intervalo de precio.
+
+
 
 ## ¿Qué productos se compran más?
 
