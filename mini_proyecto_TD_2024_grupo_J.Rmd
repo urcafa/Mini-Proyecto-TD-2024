@@ -194,7 +194,7 @@ A continuación vamos a plantearnos diferentes cuestiones que nos podrían venir
 
     Se hacen más compras a las 5 de la tarde.
 
-2)  ¿Qué días hay compras más grandes?
+2)  ¿Qué días hay más compras?
 
     ```{r message=FALSE, warning=FALSE}
     compras_por_dia <- tidy_ticket %>% 
