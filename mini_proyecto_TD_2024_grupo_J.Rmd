@@ -753,6 +753,7 @@ ggplot(graf, aes(x = tipo, y = cantidad)) +
   geom_bar(stat = "identity", fill = "seagreen") +
   labs(x = "Tipo", y = "Precio", title = "Cantidad imponible por tipo")
 print(sum(a$totalImponible))
+2+2
 ```
 
 
