@@ -406,7 +406,7 @@ Como se puede observar en la gráfica, las bolsas de plástico son el producto m
 
 Para saber la media de productos por tickets hemos contabilizado todos los productos y a esta cifra le hemos dividido el número total de tickets.
 
-```{r, echo = False}
+```{r, echo = FALSE}
 # Calculamos de la media de productos por ticket con dos decimales
 media_productos_por_ticket = round(sum(nrow(todos_los_tickets)) / num_tickets, 2)
 ```
@@ -576,7 +576,7 @@ Como se puede observar en la gráfica, las bolsas de plástico son el producto m
 
 Para saber la media de productos por tickets hemos contabilizado todos los productos y a esta cifra le hemos dividido el número total de tickets.
 
-```{r, echo = False}
+```{r, echo = FALSE}
 # Calculamos de la media de productos por ticket con dos decimales
 media_productos_por_ticket = round(sum(nrow(todos_los_tickets)) / num_tickets, 2)
 ```
