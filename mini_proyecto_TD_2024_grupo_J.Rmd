@@ -219,26 +219,6 @@ detectar_fruta <- function(a){
   # Devuelve un dataframe con producos y otro con las frutas
 
 }
-
-ticket_a <- detectar_fruta("./data/20231216 Mercadona 46,19.txt")
-ticket_b <- detectar_fruta("./data/20231218 Mercadona 13,34.txt")
-ticket_c <- detectar_fruta("./data/20231218 Mercadona 60,47.txt")
-ticket_d <- detectar_fruta("./data/20231219 Mercadona 63,80.txt")
-ticket_e <- detectar_fruta("./data/20231223 Mercadona 86,53.txt")
-ticket_f <- detectar_fruta("./data/20231224 Mercadona 37,49.txt")
-ticket_g <- detectar_fruta("./data/20231226 Mercadona 25,83.txt")
-ticket_h <- detectar_fruta("./data/20231228 Mercadona 63,50.txt")
-ticket_i <- detectar_fruta("./data/20231229 Mercadona 15,22.txt")
-ticket_a
-ticket_b
-ticket_c
-ticket_d
-ticket_e
-ticket_f
-ticket_g
-ticket_h
-ticket_i
-
 ```
 
 
