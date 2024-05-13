@@ -37,7 +37,7 @@ Por suerte, en nuestros conjuntos de datos no hay "missing data", ya que se trat
 
 Como ya hemos explicado previamente, hemos convertido nuestros ficheros a .txt desde .pdf. Ahora, vamos a crear otra función para separar las cadenas de caracteres de los ficheros y así importar los datos en los dataframes de forma que nos resulte más fácil trabajar con ellos. También hemos de crear un par de funciones que lean la fruta de forma correcta, pues el formato es distinto al resto de productos.
 
-```{r}
+```{r, echo = FALSE}
 # Primero que nada, cargamos las librerías:
  
 library(pacman)
@@ -84,7 +84,7 @@ rm(list=ls())
 ```
 
 
-```{r} 
+```{r, echo = FALSE} 
 extraer_informacion <- function(archivo) {
   # Leemos el texto desde el archivo
   texto <- readLines(archivo, encoding = "UTF-8")
@@ -110,7 +110,7 @@ extraer_informacion <- function(archivo) {
 
 
 ```
-```{r}
+```{r, echo = FALSE}
 separar <- function(df) {
   df <- df %>%
     mutate(unidades = as.numeric(substr(producto, 1,1))) %>% 
@@ -135,7 +135,7 @@ separar <- function(df) {
 
 
 
-```{r}
+```{r, echo = FALSE}
 arreglar_fruta <- function(fruta){
   
   # El argumento es un vector con varias frutas y su peso y precio
@@ -162,7 +162,7 @@ arreglar_fruta <- function(fruta){
 
 
 
-```{r}
+```{r, echo = FALSE}
 detectar_fruta <- function(a){
   texto <-  suppressWarnings(readLines(a, encoding = "windows-1252"))
   # Con UTF-8 daba error en algunos caracteres
@@ -244,7 +244,7 @@ ticket_i
 
  
  
-```{r, include = FALSE} 
+```{r, include = FALSE, echo = FALSE} 
 lista <- list() 
 carpeta <- "data"
 #Creamos la lista de los ficheros
@@ -290,7 +290,7 @@ Asimismo, podríamos plantearnos otras cuestiones como el gasto medio de compra,
 
 Para poder obtener esta información, vamos a trabajar solo con las variables "producto" y "precio_individual". Vamos a extraer estas columnas de los data frames y vamos a combinar toda esta información en un único data frame que ordenaremos posteriormente de forma descendente. Cuando ya tengamos la información ordenada, crearemos un gráfico que muestre los 5 productos más caros.
 
-```{r}
+```{r, echo = FALSE}
 # Vamos a recoger solo los precios de los data frames ya que solo queremos
 # trabajar con esta variable.
 
@@ -457,7 +457,7 @@ ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
 Vamos a analizar qué se compra más en general por compra: ¿comida o bebida?
  
 
-```{r}
+```{r, echo = FALSE}
 # Definimos las categorías que queremos que aparezcan en los tickets de compra.
 
 categorias <- c("comida", "bebida", "otros")
@@ -500,7 +500,7 @@ Una vez que hemos extraído los precios de todos los recibos, la función calcul
 
 Vamos a probar con un ejemplo usando tres tickets de diferentes precios:
 
-```{r}
+```{r, echo = FALSE}
 leer_precio_total <- function(nombres_archivos) {
   precios_totales <- numeric(length(nombres_archivos)) # Vector para almacenar los precios totales
   
@@ -610,7 +610,7 @@ Observamos que se obtiene que la media de productos por ticket es de **`r media_
 
 En este análisis, exploraremos cómo los precios de ciertos productos varían en función de su peso en las compras realizadas en Mercadona. Para ello, hemos desarrollado una función especializada que recorre el contenido de varios tickets almacenados en archivos de texto. Esta función está diseñada para identificar y extraer información sobre los productos vendidos por peso, capturando tanto el nombre del producto como su precio por kilogramo. 
 
-```{r}
+```{r, echo = FALSE}
 extraer_productos_por_peso <- function(rutas_archivos) {
   # Procesamos cada archivo de ticket proporcionado
   for (ruta_archivo in rutas_archivos) {
@@ -637,7 +637,7 @@ extraer_productos_por_peso <- function(rutas_archivos) {
 
 ```
 
-```{r}
+```{r, echo = FALSE}
 rutas_tickets <- c("data/20240127 Mercadona 108,33.txt","data/20240115 Mercadona 117,41.txt", "data/20240105 Mercadona 63,19.txt")
 extraer_productos_por_peso(rutas_tickets)
 
@@ -646,7 +646,7 @@ extraer_productos_por_peso(rutas_tickets)
  
  
 
-```{r} 
+```{r, echo = FALSE} 
 dfIVA <- function(listaArchivos) {
     dfl <- list()   
     
@@ -715,7 +715,7 @@ Para empezar a estudiar los datos en boxplot puede ser muy util ya que sirve par
 
 En este grafico se nota que el IVA reducido es el que tiene un rango de valores mas amplio, y tambien se pueden observar unas pocas observaciones atípicas, pero no me centraré en estudiarlas porque no influyen demasiado en los siguientes gráficos y no son outliers, simplemente compras en las que se ha gastado un poco mas de dinero que el promedio.
 
-```{r}
+```{r, echo = FALSE}
 
 
 df_long <- gather(a, key = "Variable", value = "Valor")
@@ -730,7 +730,7 @@ ggplot(df_long, aes(x = Variable, y = Valor)) +
 
 
 En la siguiente grafica se puede observar el precio total al que se le aplica cada tipo de IVA, es decir, de los 1598.87 euros, que es la suma del precio de todos los tickets, se puede ver como principalmente se aplica el IVA reducido(10%)
-```{r}
+```{r, echo = FALSE}
 
 graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$base0, na.rm = T),sum(a$base5, na.rm = T),sum(a$base10, na.rm = T),sum(a$base21, na.rm = T)))  
 graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))
@@ -746,7 +746,7 @@ print(sum(a$totalBase))
 Para continuar, en esta grafica se puede observar el total imponible de cada tipo de IVA, es decir, de todo el dinero gastado 127.56 euros se han cobrado por el IVA y la mayoria de dinero se ha recaudado por el IVA reducido(10%)
 
 
-```{r}
+```{r, echo = FALSE}
 graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$imponible0, na.rm = T),sum(a$imponible5, na.rm = T),sum(a$imponible10, na.rm = T),sum(a$imponible21, na.rm = T)))  
 graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))
 ggplot(graf, aes(x = tipo, y = cantidad)) +
@@ -761,7 +761,7 @@ print(sum(a$totalImponible))
 
 Para terminar, la siguiente grafica muestra la media de cada tipo de IVA tanto el total, como la parte imponible.
 
-```{r}
+```{r, echo = FALSE}
 medias<-a %>%group_by()%>% 
   summarise("Total 21%"= mean(base21, na.rm = TRUE),"Total 10%"= mean(base10, na.rm = TRUE),"Total 5%"= mean(base5, na.rm = TRUE),"Total 0%"= mean(base0, na.rm = TRUE),"General(20)"= mean(imponible21, na.rm = TRUE),"reducido(10)"= mean(imponible10, na.rm = TRUE),"superreducido(5)"= mean(imponible5, na.rm = TRUE))
 mediasl <- gather(medias, key = "Variable", value = "Valor")
