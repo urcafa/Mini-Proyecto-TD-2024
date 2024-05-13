@@ -556,26 +556,26 @@ extraer_productos_por_peso(rutas_tickets)
  
  
 
-```{r, echo = FALSE} 
+```{r, echo = FALSE, warning=FALSE} 
 dfIVA <- function(listaArchivos) {
-    dfl <- list()   
+    dfl <- list()   #lista vacía donde se almacenarán los dataframes resultantes
     
     for (archivo in listaArchivos) {
-        texto <- suppressWarnings(readLines(archivo, encoding = "windows-1252"))
+        texto <- (readLines(archivo, encoding = "windows-1252"))#Extraigo la informacion de los txt
         total1 <- texto[grep("^TOTAL \\(", texto)]
         indice1 <- grep("^IVA BASE", texto)
-        indice2 <- grep("^TOTAL \\d", texto)
+        indice2 <- grep("^TOTAL \\d", texto)#Obtengo las lineas que contienen el IVA 
         IVA <- texto[(indice1 + 1):(indice2 - 1)]
-        IVA<- c(IVA,texto[indice2])
-        matrizIVA <- matrix(IVA, ncol = 5, byrow = TRUE)
+        IVA<- c(IVA,texto[indice2])#Creo un vector con la informacion
+        matrizIVA <- matrix(IVA, ncol = 5, byrow = TRUE)#Lo paso a matriz y le doy la forma adecuada para obtener el df que quiero
  
         dfIVA <- as.data.frame(matrizIVA)
          
-        dfl[[archivo]] <- dfIVA
+        dfl[[archivo]] <- dfIVA#Almaceno el df en la lista
     }
      
-    df_final<-bind_rows(dfl)
-    df1 <- df_final %>%
+    df_final<-bind_rows(dfl)#Uno todos los df en uno
+    df1 <- df_final %>%#Los datos no estan ordenados por columnas, creo nuevas columnas con la condicion de que cada una sea un tipo de IVA o el total
   rowwise() %>%
   mutate(veintiuno = ifelse(any(startsWith(c_across(everything()), "21")), 
                    first(c_across(everything())[startsWith(c_across(everything()), "21")]), 
@@ -592,6 +592,8 @@ dfIVA <- function(listaArchivos) {
   mutate(total = ifelse(any(startsWith(c_across(everything()), "TOTAL")), 
                    first(c_across(everything())[startsWith(c_across(everything()), "TOTAL")]), 
                    NA))
+    
+  #Me quedo con las columnas nuevas y selecciono solo los caracteres que me interesan
   df <-df1%>%
   select(veintiuno,diez,cinco,cero,total)%>%
   mutate(base21=substr(veintiuno,5,8))%>%
@@ -605,7 +607,7 @@ dfIVA <- function(listaArchivos) {
   mutate(imponible0=substr(cero,(nchar(cero)-4),nchar(cero)))%>%
   mutate(totalImponible=substr(total,(nchar(total)-4),nchar(total)))%>%
       select(base21,base10,base5,base0,imponible21,imponible10,imponible5,imponible0,totalBase,totalImponible) %>%
-  mutate_all(~ str_replace_all(., ",", "."))%>%
+  mutate_all(~ str_replace_all(., ",", "."))%>%#Reenplazo comas por puntos y paso a numerico
    mutate_all(as.numeric)
     
     return(df)
@@ -614,7 +616,7 @@ carpeta <- "data"
 fichero<-list.files(path = carpeta, full.names = TRUE, recursive = TRUE, pattern = ".txt")
 
 a<-dfIVA(fichero)
-a
+
  
 ```
 
@@ -628,7 +630,7 @@ En este grafico se nota que el IVA reducido es el que tiene un rango de valores 
 ```{r, echo = FALSE}
 
 
-df_long <- gather(a, key = "Variable", value = "Valor")
+df_long <- gather(a, key = "Variable", value = "Valor")#Modelo el df en dos columnas para adecuarlo al plot
 
 ggplot(df_long, aes(x = Variable, y = Valor)) +
   geom_boxplot(fill="seagreen") +
@@ -644,15 +646,15 @@ ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
 En la siguiente grafica se puede observar el precio total al que se le aplica cada tipo de IVA, es decir, de los 1598.87 euros, que es la suma del precio de todos los tickets, se puede ver como principalmente se aplica el IVA reducido(10%)
 ```{r, echo = FALSE}
 
-graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$base0, na.rm = T),sum(a$base5, na.rm = T),sum(a$base10, na.rm = T),sum(a$base21, na.rm = T)))  
-graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))
+graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$base0, na.rm = T),sum(a$base5, na.rm = T),sum(a$base10, na.rm = T),sum(a$base21, na.rm = T)))  #Creo un df con los datos que me interesan
+graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))#Paso esta columna a factor para que salga ordenada
 IVA1<-ggplot(graf, aes(x = tipo, y = cantidad)) +
   geom_bar(stat = "identity",fill="seagreen") +
   labs(x = "Tipo", y = "Cantidad", title = "Precio del total al que se le aplica cada tipo de IVA")
 print(sum(a$totalBase))
 
 
-ggsave("graficas/IVA_total.jpeg", IVA1, width = 10, height = 6.5)
+ggsave("graficas/IVA_total.jpeg", IVA1, width = 10, height = 6.5)#Guardo el grafico
 ```
 
 
@@ -662,8 +664,8 @@ Para continuar, en esta grafica se puede observar el total imponible de cada tip
 
 
 ```{r, echo = FALSE}
-graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$imponible0, na.rm = T),sum(a$imponible5, na.rm = T),sum(a$imponible10, na.rm = T),sum(a$imponible21, na.rm = T)))  
-graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))
+graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$imponible0, na.rm = T),sum(a$imponible5, na.rm = T),sum(a$imponible10, na.rm = T),sum(a$imponible21, na.rm = T)))  #Creo un df con los datos que me interesan
+graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))#Paso esta columna a factor para que salga ordenada
 IVA2<-ggplot(graf, aes(x = tipo, y = cantidad)) +
   geom_bar(stat = "identity", fill = "seagreen") +
   labs(x = "Tipo", y = "Precio", title = "Cantidad imponible por tipo")
@@ -682,15 +684,15 @@ Para terminar, la siguiente grafica muestra la media de cada tipo de IVA tanto e
 ```{r, echo = FALSE}
 medias<-a %>%group_by()%>% 
   summarise("Total 21%"= mean(base21, na.rm = TRUE),"Total 10%"= mean(base10, na.rm = TRUE),"Total 5%"= mean(base5, na.rm = TRUE),"Total 0%"= mean(base0, na.rm = TRUE),"General(20)"= mean(imponible21, na.rm = TRUE),"reducido(10)"= mean(imponible10, na.rm = TRUE),"superreducido(5)"= mean(imponible5, na.rm = TRUE))
-mediasl <- gather(medias, key = "Variable", value = "Valor")
-mediasl$Variable <- factor(mediasl$Variable, levels = mediasl$Variable)
-mediasl$Categoria <- ifelse(mediasl$Variable %in% c("Total 21%", "Total 10%", "Total 5%", "Total 0%"), "Total", "Imponible")
+mediasl <- gather(medias, key = "Variable", value = "Valor")#Obtengo las medias y las agrupo en dos columnas
+mediasl$Variable <- factor(mediasl$Variable, levels = mediasl$Variable)#Paso  columna a factor para que salga ordenada
+mediasl$Categoria <- ifelse(mediasl$Variable %in% c("Total 20%", "Total 10%", "Total 5%", "Total 0%"), "Total", "Imponible")#Creo una nueva variable para distinguir el IVA base del imponible
 mediaIVA<-ggplot(mediasl, aes(x = Variable, y = Valor, fill = Categoria)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values = c("Total" = "#CC6666", "Imponible" = "#66CCCC")) +
   labs(title = "Media del IVA", x = "Precio", y = "Tipo de IVA")+ 
   theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 9))
-
+ 
 
 ggsave("graficas/mediaIVA.jpeg", mediaIVA, width = 10, height = 6.5)
  
