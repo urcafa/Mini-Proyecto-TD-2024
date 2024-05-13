@@ -72,160 +72,104 @@ Como ya hemos explicado previamente, hemos convertido nuestros ficheros a .txt d
 
 library(pacman)
 p_load(dplyr, stringr)
-
-
-extraer_informacion <- function(archivo) {
-  # Leemos el texto desde el archivo
-  texto <- readLines(archivo, encoding = "UTF-8")
-
-  # Extraemos la fecha y la hora
-  fecha_hora <- substr(texto[5], 1, 16)
-
-  # Como esta información se encuentra en la misma línea de texto la separamos
-  fecha <- substr(fecha_hora, 1, 10)
-  hora <- substr(fecha_hora, 12, 16)
-
-  # Extraemos la calle
-  calle <- grep("C\\/\\s.*\\s\\d+", texto, value = TRUE)
-  if (length(calle) == 0) {
-    calle <- "Dirección no encontrada"
-  }
-
-  # Creamos el data frame
-  df <- data.frame(Fecha = fecha, Hora = hora, Calle = calle)
-  
-  return(df)
-}
 ```
 
-```{r}
-separar <- function(df) {
-  df <- df %>%
-    mutate(unidades = as.numeric(substr(producto, 1,1))) %>% 
-    # Seleccionamos el número de unidades y hacemos una columna
-    mutate(precio_completo =  (substr(producto, nchar(producto) - 3, nchar(producto))), 
-           # Seleccionamos el precio y hacemos una columna
-           producto = substr(producto, 2, nchar(producto)-4))
-           # Borramos las unidades de la columna original
-  
-  df$precio_completo<- gsub(",", ".", df$precio_completo)
-  df$precio_completo <- as.numeric(df$precio_completo)
-  #Sustituyo comas por puntos y paso a numerico el precio
-  
-  df<- df %>% 
-    mutate(precio_individual=precio_completo/unidades)
-  #Obtengo el precio por unidad a partir del precio completo y las unidades
-  
-  return(df)
-}
-```
+```{r message=FALSE, warning=FALSE}
+# Crear un vector para almacenar los datos de los tickets
+tickets <- list()
 
-```{r}
-arreglar_fruta <- function(fruta){
-  
-  # El argumento es un vector con varias frutas y su peso y precio
-  
-  precios <- fruta[seq_along(fruta) %% 2 == 0]  
-  frutas <- fruta[seq_along(fruta) %% 2 != 0] 
-  df <- data.frame(frutas = frutas,  precios = precios)
-  # Separamos el vector en dos y creo un dataframe
-  df <- df %>%
-    mutate(unidades = as.numeric(substr(frutas, 1,1)),
-           # Seleccionamos el número de unidades y hacemos una columna
-           frutas = substr(frutas,2, nchar(frutas)),
-           # Borramos el número de unidades de la columna
-           peso_kg = substr(precios,1,nchar(precios)-20)) %>%
-    # Obtenemos el peso de la columna precios y creamos una columna
-    mutate(precio_por_kg = substr(precios,10,14)) %>%
-    # Obtenemos el precio por kg de la columna precios y creamos una columna
-    mutate(precios = substr(precios,nchar(precios)-4,nchar(precios)))
-  # Seleccionamos únicamente el precio de la columna precios
-  
-  return(df)
-}
-```
+# Ruta a la carpeta que contiene los archivos txt
+ruta_carpeta <- "./data/"
 
-```{r}
-detectar_fruta <- function(a){
-  texto <-  suppressWarnings(readLines(a, encoding = "latin1"))
-  # Con UTF-8 daba error en algunos caracteres
+# Obtener la lista de archivos en la carpeta
+archivos <- list.files(path = ruta_carpeta, pattern = ".txt", full.names = TRUE)
+
+for (archivo in archivos) {
+  # Leer el archivo txt
+  # Leer el archivo txt y convertir a UTF-8
+  lineas <- readLines(archivo, encoding = "latin1")
+  lineas <- iconv(lineas, from = "latin1", to = "UTF-8", sub = "")
   
-  indice_parking <- grep("^1PARKING", texto)
+  # Otro código sigue igual
+
   
-  if (length(indice_parking) == 0) {
-    productos <- texto[8:(length(texto) - 11)]
+  # Extraer la información del ticket
+  nombre <- lineas[1]
+  direccion <- lineas[2]
+  codigo_postal_municipio <- lineas[3]
+  telefono <- lineas[4]
+  fecha_operacion <- lineas[5]
+  numero_factura <- lineas[6]
+  cabeceras <- unlist(strsplit(lineas[7], "\t"))
+  
+  # Extraer la lista de productos
+  productos <- lineas[8:(length(lineas) - 14)]
+  # Eliminar espacios en blanco al principio y al final de cada línea
+  productos <- trimws(productos)
+  
+  # Extraer el precio total
+  precio_total <- lineas[length(lineas) - 12]
+  
+  # Extraer el método de pago e importe
+  metodo_pago_importe <- lineas[length(lineas) - 11]
+  
+  # Extraer los tipos de IVA, base imponible y cuota
+  iva <- lineas[(length(lineas) - 9):(length(lineas) - 6)]
+  iva <- unlist(strsplit(iva, "\t"))
+  
+  # Extraer el sumatorio de la base imponible y de la cuota
+  sumatorio_base_cuota <- lineas[length(lineas) - 5]
+  
+  # Extraer el número de tarjeta si ha sido el método de pago
+  numero_tarjeta <- lineas[length(lineas) - 6]
+  
+  # Extraer información adicional
+  informacion_adicional <- lineas[(length(lineas) - 4):length(lineas)]
+  
+ # Repetir el último valor para igualar la longitud de los vectores
+longitud_deseada <- length(lineas)
+repetir_ultimo_valor <- function(vector, longitud_deseada) {
+  if (length(vector) < longitud_deseada) {
+    ultimo_valor <- vector[length(vector)]
+    nueva_longitud <- longitud_deseada - length(vector)
+    vector_extendido <- c(vector, rep(ultimo_valor, nueva_longitud))
+    return(vector_extendido)
   } else {
-    productos <- texto[8:(indice_parking - 1)]
+    return(vector)
   }
-  # Seleccionamos solo las filas con productos y creamos un dataframe
-
-  while (!grepl("^\\d", tail(productos, 1))) {
-    productos <- productos[-length(productos)]
-  }
-  # Para asegurarnos de incluir todos los productos, seleccionamos líneas de más y 
-  # borramos las sobrantes en este bucle
-  
-  df <- data.frame(producto = productos)
-  
-  indices <- c()
-
-  for (i in productos){
-    idx <- str_detect(i, "^[0-9]{1,3},[0-9]{3}")
-    indices <- append(indices, idx)
-    
-  }
-  ind_frut <- which(indices)
-  # Detectamos  los índices de las frutas
-  
-  frutas <- c()
-  for (i in ind_frut){
-    frutas <- rbind(frutas, df[(i-1), ])
-    frutas <- rbind(frutas, df[i, ])
-
-  } 
-  
-  #Creamos un vector con las frutas y sus precios
-  
-  for (i in ind_frut){
-    df <- subset(df, row.names(df) != i)
-    df <- subset(df, row.names(df) != i-1)
-  } 
-  
-  #Quitamos las frutas del dataframe
-  
-  df_productos<-separar(df)
-  
-  df_frutas<-arreglar_fruta(frutas)
-  
-  return(list(df_productos,df_frutas))
-  
-  # Devuelve un dataframe con producos y otro con las frutas
-
 }
+
+  # Almacenar la información en un data frame
+  ticket_df <- data.frame(
+    Nombre = repetir_ultimo_valor(nombre, longitud_deseada),
+    Direccion = repetir_ultimo_valor(direccion, longitud_deseada),
+    Codigo_Postal_Municipio = repetir_ultimo_valor(codigo_postal_municipio,                 longitud_deseada),
+    Telefono = repetir_ultimo_valor(telefono, longitud_deseada),
+    Fecha_Operacion = repetir_ultimo_valor(fecha_operacion, longitud_deseada),
+    Numero_Factura = repetir_ultimo_valor(numero_factura, longitud_deseada),
+    Cabeceras = repetir_ultimo_valor(cabeceras, longitud_deseada),
+    Productos = repetir_ultimo_valor(productos, longitud_deseada),
+    Precio_Total = repetir_ultimo_valor(precio_total, longitud_deseada),
+    Metodo_Pago_Importe = repetir_ultimo_valor(metodo_pago_importe, longitud_deseada),
+    IVA = repetir_ultimo_valor(iva, longitud_deseada),
+    Sumatorio_Base_Cuota = repetir_ultimo_valor(sumatorio_base_cuota, longitud_deseada),
+    Numero_Tarjeta = repetir_ultimo_valor(numero_tarjeta, longitud_deseada),
+    Informacion_Adicional = repetir_ultimo_valor(informacion_adicional, longitud_deseada)
+  )
+  
+    # Almacenar el dataframe del ticket en la lista de tickets
+    tickets[[length(tickets) + 1]] <- ticket_df
+  }
+# Combinar todos los dataframes en uno solo
+df_tickets <- do.call(rbind, tickets)
 ```
 
-```{r warning=FALSE}
-lista <- list() 
-carpeta <- "data"
+```{r message=FALSE, warning=FALSE}
+library(tidyr)
 
-#Creamos la lista de los ficheros
-ficheros <- list.files(path = carpeta, full.names = TRUE, recursive = TRUE, pattern = ".txt")
-for (fichero in ficheros){
-    # Leer el archivo txt
-  ticket <- read.table(fichero, header = TRUE, stringsAsFactors = FALSE, sep = "\t")
-  # Agregar el dataframe del ticket a la lista
-  lista[[length(lista) + 1]] <- ticket
-}
-
-# Combinar todos los dataframes en uno solo
-df_tickets <- do.call(rbind, lista)
-
-# Ver el dataframe combinado
-print(df_tickets)
-  
-  
-  
-  
+# Convertir el dataframe en formato tidy
+tidy_ticket <- df_tickets %>% separate(Telefono, into=c("X", "Telefono"), sep = " ") %>% separate(Codigo_Postal_Municipio, into = c("CP", "Municipio")) %>% separate(Fecha_Operacion, into = c("Fecha", "Hora"), sep = " ") %>% separate(Hora, into = c("Horas", "Mins"), sep = ":") %>% separate(Fecha, into = c("Dia", "Mes", "Anyo"), sep = "/") %>% separate(Numero_Factura, into = c("Y", "Cod_Factura"), sep = ":") %>% separate(Precio_Total, into = c("W", "Z","Importe"), sep = " ") %>% select(-c("X","Y","W","Z"))
+# Ver el dataframe tidy
 
 ```
 
@@ -235,13 +179,17 @@ A continuación vamos a plantearnos diferentes cuestiones que nos podrían venir
 
 1)  ¿A qué hora del día se hacen más compras?
 
-    ```{r}
-
+    ```{r warning=FALSE}
+    library(ggplot2)
+    compras_por_dia <- tidy_ticket %>% select(as.factor("Horas"))
+    ggplot(data = compras_por_dia, aes(x = "Horas")) +
+      geom_histogram(fill = "lightgreen", color = "black", bins = 30) +
+      labs(title = "Horas con más compras", x = "Horas", y = "Frecuencia")
     ```
 
 2)  ¿Qué días hay compras más grandes?
 
-    ```{r}
+    ```{r warning=FALSE}
 
     ```
 
