@@ -428,7 +428,7 @@ grafica
 
 # Si queremos descargarnos el gráfico:
 
-ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
+ggsave("graficas/top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
 ```
 
  
@@ -513,77 +513,7 @@ leer_precio_total(archivos)
 
 ```
  
-## ¿Qué productos se compran más?
 
-Para calcular los productos más vendidos a partir de los tickets de compra, primero vamos a contabilizar la cantidad de cada producto que se compró en cada ticket, lo que nos da un recuento de unidades para cada producto. Tras ello, sumaremos las unidades de cada producto a través de todos los tickets para obtener un total de unidades vendidas para cada producto. Finalmente, ordenamos los productos por el total de unidades vendidas para identificar los productos más vendidos. Es decir, aquellos productos con más unidades vendidas son los productos más vendidos.
-
-
-
-```{r, echo=FALSE, warning=FALSE}
-library(ggplot2)
-# Utilizamos la función que ya tenemos para obtener la lista de dataframes
-lista_df <- lista
-
-# Unimos todos los dataframes de los tickets en uno solo
-todos_los_tickets <- do.call(rbind, lista_df)
-# Eliminamos la última fila del dataframe
-todos_los_tickets <- head(todos_los_tickets, -1)
-
-# Convertimos la columna 'unidades' a numérica
-todos_los_tickets$unidades <- as.numeric(as.character(todos_los_tickets$unidades))
-
-# Eliminamos las filas con NA (que son las filas que no se pudieron convertir a numérico)
-todos_los_tickets <- todos_los_tickets[!is.na(todos_los_tickets$unidades), ]
-
-# A continuación, agrupamos los datos por producto y calculamos las unidades totales de cada producto
-productos_por_unidades <- todos_los_tickets %>%
-  group_by(producto) %>%
-  summarise(
-    unidades_total = sum(unidades),
-    .groups = 'drop'
-  )
-# Calcula el número total de tickets
-num_tickets <- length(lista_df)
-
-# Calcula la media de unidades por ticket para cada producto
-productos_por_unidades <- productos_por_unidades %>%
-  mutate(unidades_promedio_por_ticket = unidades_total / num_tickets)
-
-# Ahora, ordenamos los productos por sus unidades promedio por ticket
-productos_ordenados <- productos_por_unidades %>%
-  arrange(desc(unidades_promedio_por_ticket))
-
-# Finalmente, podemos ver los productos que se compran más según la media de unidades por ticket
-top_productos <- head(productos_ordenados)
-top_productos
-
-# Creamos un gráfico
-grafico <- ggplot(top_productos, aes(x = reorder(producto, -unidades_promedio_por_ticket), y = unidades_promedio_por_ticket)) +
-  geom_bar(stat = "identity", fill = "seagreen", width = 0.4) + # cambia el ancho de las barras a 0.5
-  theme_minimal() + # usa un tema minimalista
-  theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 6)) +
-  ylim(0,2) +
-  labs(x = "Producto", y = "Unidades promedio por ticket", title = "Productos más comprados según la media de unidades por ticket")
-grafico
-
-#Si queremos descargarnos el gráfico
-#ggsave("productos_mas_comprados.jpeg", grafico, width = 10, height = 6.5)
-```
-
-Como se puede observar en la gráfica, las bolsas de plástico son el producto más vendido. Con más de 1.1 bolsas de plástico compradas por ticket. Además productos como la chaparta cristal, el zumo fresco, la leche descnatada, la caracola al cacao o el queso a lonchas de cabra también son los más vendidos entre los tickets analizados.
-
-## ¿Cuántos productos se compran de media en una compra?
-
-Para saber la media de productos por tickets hemos contabilizado todos los productos y a esta cifra le hemos dividido el número total de tickets.
-
-```{r, echo = FALSE}
-# Calculamos de la media de productos por ticket con dos decimales
-media_productos_por_ticket = round(sum(nrow(todos_los_tickets)) / num_tickets, 2)
-```
-
- 
-
-Observamos que se obtiene que la media de productos por ticket es de **`r media_productos_por_ticket`**. Además sabemos que esto va relacionado con el precio de cada compra. Cuantos más productos compres, más cara saldrá la compra.
 
 
 ## ¿Qué productos cambian de precio (por kg)?
@@ -704,6 +634,8 @@ ggplot(df_long, aes(x = Variable, y = Valor)) +
   geom_boxplot(fill="seagreen") +
   labs(title = "Boxplot de cada Variable", x = "Tipo IVA", y = "Valores")+ 
   theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 9))
+
+ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
 ```
 
 
@@ -714,10 +646,13 @@ En la siguiente grafica se puede observar el precio total al que se le aplica ca
 
 graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$base0, na.rm = T),sum(a$base5, na.rm = T),sum(a$base10, na.rm = T),sum(a$base21, na.rm = T)))  
 graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))
-ggplot(graf, aes(x = tipo, y = cantidad)) +
+IVA1<-ggplot(graf, aes(x = tipo, y = cantidad)) +
   geom_bar(stat = "identity",fill="seagreen") +
   labs(x = "Tipo", y = "Cantidad", title = "Precio del total al que se le aplica cada tipo de IVA")
 print(sum(a$totalBase))
+
+
+ggsave("graficas/IVA_total.jpeg", IVA1, width = 10, height = 6.5)
 ```
 
 
@@ -729,11 +664,13 @@ Para continuar, en esta grafica se puede observar el total imponible de cada tip
 ```{r, echo = FALSE}
 graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$imponible0, na.rm = T),sum(a$imponible5, na.rm = T),sum(a$imponible10, na.rm = T),sum(a$imponible21, na.rm = T)))  
 graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))
-ggplot(graf, aes(x = tipo, y = cantidad)) +
+IVA2<-ggplot(graf, aes(x = tipo, y = cantidad)) +
   geom_bar(stat = "identity", fill = "seagreen") +
   labs(x = "Tipo", y = "Precio", title = "Cantidad imponible por tipo")
 print(sum(a$totalImponible))
-2+2
+
+
+ggsave("graficas/IVA_Imponible.jpeg", IVA2, width = 10, height = 6.5)
 ```
 
 
@@ -748,11 +685,14 @@ medias<-a %>%group_by()%>%
 mediasl <- gather(medias, key = "Variable", value = "Valor")
 mediasl$Variable <- factor(mediasl$Variable, levels = mediasl$Variable)
 mediasl$Categoria <- ifelse(mediasl$Variable %in% c("Total 21%", "Total 10%", "Total 5%", "Total 0%"), "Total", "Imponible")
-ggplot(mediasl, aes(x = Variable, y = Valor, fill = Categoria)) +
+mediaIVA<-ggplot(mediasl, aes(x = Variable, y = Valor, fill = Categoria)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values = c("Total" = "#CC6666", "Imponible" = "#66CCCC")) +
   labs(title = "Media del IVA", x = "Precio", y = "Tipo de IVA")+ 
   theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 9))
+
+
+ggsave("graficas/mediaIVA.jpeg", mediaIVA, width = 10, height = 6.5)
  
 ```
 
