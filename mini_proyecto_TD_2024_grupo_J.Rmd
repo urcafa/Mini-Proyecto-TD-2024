@@ -168,7 +168,7 @@ df_tickets <- do.call(rbind, tickets)
 library(tidyr)
 
 # Convertir el dataframe en formato tidy
-tidy_ticket <- df_tickets %>% separate(Telefono, into=c("X", "Telefono"), sep = " ") %>% separate(Codigo_Postal_Municipio, into = c("CP", "Municipio")) %>% separate(Fecha_Operacion, into = c("Fecha", "Hora"), sep = " ") %>% separate(Hora, into = c("Horas", "Mins"), sep = ":") %>% separate(Fecha, into = c("Dia", "Mes", "Anyo"), sep = "/") %>% separate(Numero_Factura, into = c("Y", "Cod_Factura"), sep = ":") %>% separate(Precio_Total, into = c("W", "Z","Importe"), sep = " ") %>% select(-c("X","Y","W","Z"))
+tidy_ticket <- df_tickets %>% separate(Telefono, into=c("X", "Telefono"), sep = " ") %>% separate(Codigo_Postal_Municipio, into = c("CP", "Municipio")) %>% separate(Fecha_Operacion, into = c("Fecha", "Hora"), sep = " ") %>% mutate(Fecha = as.Date(Fecha, format = "%d/%m/%Y"), dia_semana = weekdays(Fecha)) %>%  separate(Hora, into = c("Horas", "Mins"), sep = ":") %>% separate(Numero_Factura, into = c("Y", "Cod_Factura"), sep = ":") %>% separate(Precio_Total, into = c("W", "Z","Importe"), sep = " ") %>% select(-c("X","Y","W","Z")) %>% separate(Fecha, into = c("Anyo", "Mes", "Dia"), sep = "-")
 # Ver el dataframe tidy
 
 ```
@@ -179,18 +179,30 @@ A continuación vamos a plantearnos diferentes cuestiones que nos podrían venir
 
 1)  ¿A qué hora del día se hacen más compras?
 
-    ```{r warning=FALSE}
+    ```{r message=FALSE, warning=FALSE}
     library(ggplot2)
-    compras_por_dia <- tidy_ticket %>% select(as.factor("Horas"))
-    ggplot(data = compras_por_dia, aes(x = "Horas")) +
-      geom_histogram(fill = "lightgreen", color = "black", bins = 30) +
+
+    # Seleccionar la columna "Horas" como factor
+    compras_por_hora <- tidy_ticket %>% 
+      select(Horas = Horas)
+
+    # Crear el gráfico de barras
+    ggplot(data = compras_por_hora, aes(x = Horas)) +
+      geom_bar(fill = "lightgreen", color = "black") +
       labs(title = "Horas con más compras", x = "Horas", y = "Frecuencia")
     ```
 
+    Se hacen más compras a las 5 de la tarde.
+
 2)  ¿Qué días hay compras más grandes?
 
-    ```{r warning=FALSE}
-
+    ```{r message=FALSE, warning=FALSE}
+    compras_por_dia <- tidy_ticket %>% 
+      select(dia_semana = dia_semana)
+    # Crear el gráfico de barras
+    ggplot(data = compras_por_dia, aes(x = dia_semana)) +
+      geom_bar(fill = "green", color = "black") +
+      labs(title = "Horas con más compras", x = "Horas", y = "Frecuencia")
     ```
 
 Además podríamos calcular las distribuciones de compras por categorías de productos para saber qué tipos de productos son los más comprados. A partir de esto también podríamos obtener la distribución de gastos que hace el consumidor a la hora de realizar la compra.
