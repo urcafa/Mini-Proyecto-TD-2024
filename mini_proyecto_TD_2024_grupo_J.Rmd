@@ -1,6 +1,6 @@
 ---
 title: "Mini Proyecto TD 2024"
-subtitle: "Entrega parcial"
+subtitle: "Entrega final"
 author: |
   Víctor Álvarez Palomares,  
   Sergio Martínez Yagüe,  
@@ -9,8 +9,8 @@ author: |
   y Úrsula Casaus Fabra
 date: "`r Sys.Date()`"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -37,7 +37,7 @@ Por suerte, en nuestros conjuntos de datos no hay "missing data", ya que se trat
 
 Como ya hemos explicado previamente, hemos convertido nuestros ficheros a .txt desde .pdf. Ahora, vamos a crear otra función para separar las cadenas de caracteres de los ficheros y así importar los datos en los dataframes de forma que nos resulte más fácil trabajar con ellos. También hemos de crear un par de funciones que lean la fruta de forma correcta, pues el formato es distinto al resto de productos.
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, warning = FALSE, include=FALSE}
 # Primero que nada, cargamos las librerías:
  
 library(pacman)
@@ -84,7 +84,7 @@ rm(list=ls())
 ```
 
 
-```{r, echo = FALSE} 
+```{r, echo = FALSE, warning = FALSE, include=FALSE} 
 extraer_informacion <- function(archivo) {
   # Leemos el texto desde el archivo
   texto <- readLines(archivo, encoding = "UTF-8")
@@ -110,12 +110,14 @@ extraer_informacion <- function(archivo) {
 
 
 ```
-```{r, echo = FALSE}
+
+```{r, echo = FALSE, warning = FALSE, include=FALSE}
 separar <- function(df) {
   df <- df %>%
     mutate(unidades = as.numeric(substr(producto, 1,1))) %>% 
     # Seleccionamos el número de unidades y hacemos una columna
-    mutate(precio_completo =  (substr(producto, nchar(producto) - 3, nchar(producto))), 
+    mutate(precio_completo =  (substr(producto, nchar(producto) - 3,
+                                      nchar(producto))), 
            # Seleccionamos el precio y hacemos una columna
            producto = substr(producto, 2, nchar(producto)-4))
            # Borramos las unidades de la columna original
@@ -126,16 +128,14 @@ separar <- function(df) {
   
   df<- df %>% 
     mutate(precio_individual=precio_completo/unidades)
+  
   #Obtengo el precio por unidad a partir del precio completo y las unidades
   
   return(df)
 }
 ```
 
-
-
-
-```{r, echo = FALSE}
+```{r, echo = FALSE, warning = FALSE, include=FALSE}
 arreglar_fruta <- function(fruta){
   
   # El argumento es un vector con varias frutas y su peso y precio
@@ -152,7 +152,8 @@ arreglar_fruta <- function(fruta){
            peso_kg = substr(precios,1,nchar(precios)-20)) %>%
     # Obtenemos el peso de la columna precios y creamos una columna
     mutate(precio_por_kg = substr(precios,10,14)) %>%
-    # Obtenemos el precio por kg de la columna precios y creamos una columna
+    # Obtenemos el precio por kg de la columna precios y creamos una 
+    #columna
     mutate(precios = substr(precios,nchar(precios)-4,nchar(precios)))
   # Seleccionamos únicamente el precio de la columna precios
   
@@ -160,9 +161,7 @@ arreglar_fruta <- function(fruta){
 }
 ```
 
-
-
-```{r, echo = FALSE}
+```{r, echo = FALSE, warning = FALSE, include=FALSE}
 detectar_fruta <- function(a){
   texto <-  suppressWarnings(readLines(a, encoding = "windows-1252"))
   # Con UTF-8 daba error en algunos caracteres
@@ -179,8 +178,8 @@ detectar_fruta <- function(a){
   while (!grepl("^\\d", tail(productos, 1))) {
     productos <- productos[-length(productos)]
   }
-  # Para asegurarnos de incluir todos los productos, seleccionamos líneas de más y 
-  # borramos las sobrantes en este bucle
+  # Para asegurarnos de incluir todos los productos, seleccionamos líneas
+  # de más y borramos las sobrantes en este bucle
   
   df <- data.frame(producto = productos)
   
@@ -220,57 +219,135 @@ detectar_fruta <- function(a){
 
 }
 ```
-
-
  
- 
-```{r, include = FALSE, echo = FALSE} 
+```{r, include = FALSE, echo = FALSE, warning = FALSE} 
 lista <- list() 
 carpeta <- "data"
 #Creamos la lista de los ficheros
-fichero<-list.files(path = carpeta, full.names = TRUE, recursive = TRUE, pattern = ".txt")
+fichero<-list.files(path = carpeta, full.names = TRUE, recursive = TRUE,
+                    pattern = ".txt")
 df <- as.data.frame(fichero)
 for (i in (1:nrow(df))){
   lista[i] <- extraer_informacion(df$fichero[i])
   lista[i] <- detectar_fruta(df$fichero[i])
   print(lista[i])
 } 
-lista[1]
-
 ```
 
+```{r, echo = FALSE, warning = FALSE, include=FALSE}
+# Otra importación para estudiar otras variables:
 
+# Crear un vector para almacenar los datos de los tickets
+tickets <- list()
+
+# Ruta a la carpeta que contiene los archivos txt
+ruta_carpeta <- "./data/"
+
+# Obtener la lista de archivos en la carpeta
+archivos <- list.files(path = ruta_carpeta, pattern = ".txt",
+                       full.names = TRUE)
+
+for (archivo in archivos) {
+  # Leer el archivo txt
+  # Leer el archivo txt y convertir a UTF-8
+  lineas <- readLines(archivo, encoding = "latin1")
+  lineas <- iconv(lineas, from = "latin1", to = "UTF-8", sub = "")
+  
+  # Otro código sigue igual
+  
+  # Extraer la información del ticket
+  nombre <- lineas[1]
+  direccion <- lineas[2]
+  codigo_postal_municipio <- lineas[3]
+  telefono <- lineas[4]
+  fecha_operacion <- lineas[5]
+  numero_factura <- lineas[6]
+  cabeceras <- unlist(strsplit(lineas[7], "\t"))
+  
+  # Extraer la lista de productos
+  productos <- lineas[8:(length(lineas) - 14)]
+  # Eliminar espacios en blanco al principio y al final de cada línea
+  productos <- trimws(productos)
+  
+  # Extraer el precio total
+  precio_total <- lineas[length(lineas) - 12]
+  
+  # Extraer el método de pago e importe
+  metodo_pago_importe <- lineas[length(lineas) - 11]
+  
+  # Extraer los tipos de IVA, base imponible y cuota
+  iva <- lineas[(length(lineas) - 9):(length(lineas) - 6)]
+  iva <- unlist(strsplit(iva, "\t"))
+  
+  # Extraer el sumatorio de la base imponible y de la cuota
+  sumatorio_base_cuota <- lineas[length(lineas) - 5]
+  
+  # Extraer el número de tarjeta si ha sido el método de pago
+  numero_tarjeta <- lineas[length(lineas) - 6]
+  
+  # Extraer información adicional
+  informacion_adicional <- lineas[(length(lineas) - 4):length(lineas)]
+  
+ # Repetir el último valor para igualar la longitud de los vectores
+longitud_deseada <- length(lineas)
+repetir_ultimo_valor <- function(vector, longitud_deseada) {
+  if (length(vector) < longitud_deseada) {
+    ultimo_valor <- vector[length(vector)]
+    nueva_longitud <- longitud_deseada - length(vector)
+    vector_extendido <- c(vector, rep(ultimo_valor, nueva_longitud))
+    return(vector_extendido)
+  } else {
+    return(vector)
+  }
+}
+
+  # Almacenar la información en un data frame
+  ticket_df <- data.frame(
+    Nombre = repetir_ultimo_valor(nombre, longitud_deseada),
+    Direccion = repetir_ultimo_valor(direccion, longitud_deseada),
+    Codigo_Postal_Municipio = repetir_ultimo_valor(codigo_postal_municipio,                 longitud_deseada),
+    Telefono = repetir_ultimo_valor(telefono, longitud_deseada),
+    Fecha_Operacion = repetir_ultimo_valor(fecha_operacion, longitud_deseada),
+    Numero_Factura = repetir_ultimo_valor(numero_factura, longitud_deseada),
+    Cabeceras = repetir_ultimo_valor(cabeceras, longitud_deseada),
+    Productos = repetir_ultimo_valor(productos, longitud_deseada),
+    Precio_Total = repetir_ultimo_valor(precio_total, longitud_deseada),
+    Metodo_Pago_Importe = repetir_ultimo_valor(metodo_pago_importe, 
+                                               longitud_deseada),
+    IVA = repetir_ultimo_valor(iva, longitud_deseada),
+    Sumatorio_Base_Cuota = repetir_ultimo_valor(sumatorio_base_cuota, 
+                                                longitud_deseada),
+    Numero_Tarjeta = repetir_ultimo_valor(numero_tarjeta, longitud_deseada),
+    Informacion_Adicional = repetir_ultimo_valor(informacion_adicional, 
+                                                 longitud_deseada)
+  )
+  
+    # Almacenar el dataframe del ticket en la lista de tickets
+    tickets[[length(tickets) + 1]] <- ticket_df
+  }
+# Combinar todos los dataframes en uno solo
+df_tickets <- do.call(rbind, tickets)
+# Convertir el dataframe en formato tidy
+tidy_ticket <- df_tickets %>% separate(Telefono, into=c("X", "Telefono"), sep = " ") %>% separate(Codigo_Postal_Municipio, into = c("CP", "Municipio")) %>% separate(Fecha_Operacion, into = c("Fecha", "Hora"), sep = " ") %>% mutate(Fecha = as.Date(Fecha, format = "%d/%m/%Y"), dia_semana = weekdays(Fecha)) %>%  separate(Hora, into = c("Horas", "Mins"), sep = ":") %>% separate(Numero_Factura, into = c("Y", "Cod_Factura"), sep = ":") %>% separate(Precio_Total, into = c("W", "Z","Importe"), sep = " ") %>% select(-c("X","Y","W","Z")) %>% separate(Fecha, into = c("Anyo", "Mes", "Dia"), sep = "-")
+```
 
 # Preguntas
 
 A continuación vamos a plantearnos diferentes cuestiones que nos podrían venir a la cabeza a la hora de hacer un análisis de los tickets de la compra. 
 
-<<<<<<< HEAD
-1) ¿Qué productos son los más comprados? 
-=======
-1) ¿Cuáles son los productos más caros?
->>>>>>> 255470c808e321d81227200aa5c6197a08111916
-2) ¿Cuál es el gasto medio de cada compra?
-3) ¿Qué nos podría dar a entender la frecuencia de compra de cada usuario
-(compras diarias, semanales...)?
-4) ¿Qué productos se compran más según el precio de la compra?
-5) ¿Qué días hay compras más grandes?
-6) ¿Qué productos tienen distintos tipos de IVA?
-7) ¿Cuántos productos se compran de media en una compra?
-8) ¿Hay algún patrón de compra según la estación del año?
-9) ¿Qué productos cambian de precio (por kg)?
+1) ¿Cuáles productos son los más caros?
+2) ¿Qué productos se compran más?
+3) ¿A qué hora del día hay más compras?
+4) ¿Qué días hay más compras?
+5) ¿Cuántos productos se compran de media en una compra?
+6) ¿Qué productos cambian de precio (por kg)?
+7) ¿Qué tipo de IVA recauda más dinero?
 
-Además podríamos calcular las distribuciones de compras por categorías de productos para saber qué tipos de productos son los más comprados. A partir de esto también podríamos obtener la distribución de gastos que hace el consumidor a la hora de realizar la compra.
-
-Asimismo, podríamos plantearnos otras cuestiones como el gasto medio de compra, si se hace el pago con efectivo o tarjeta o incluso si los usuarios tienden a ir en coche o a pie (depende de el tamaño de compra, o incluso comodidad).
-
-<<<<<<< HEAD
-=======
-## ¿Cuáles son los productos más caros?
+## 1) ¿Cuáles son los productos más caros?
 
 Para poder obtener esta información, vamos a trabajar solo con las variables "producto" y "precio_individual". Vamos a extraer estas columnas de los data frames y vamos a combinar toda esta información en un único data frame que ordenaremos posteriormente de forma descendente. Cuando ya tengamos la información ordenada, crearemos un gráfico que muestre los 5 productos más caros.
 
-```{r, echo = FALSE}
+```{r, warning = FALSE, echo = FALSE, include = FALSE}
 # Vamos a recoger solo los precios de los data frames ya que solo queremos
 # trabajar con esta variable.
 
@@ -295,7 +372,6 @@ obtener_precios <- function(lista){
 }
 
 lista_precios <- obtener_precios(lista)
-lista_precios
 
 # Ahora, creamos otra función que combine todos los data frames en un único
 # data frame y así poder hacer luego un gráfico.
@@ -320,8 +396,11 @@ df_precios <- combinar_dataframes(lista_precios)
 # Ahora, ordenamos el data frame de forma descendente para que nos 
 # aparezcan primero los productos más caros.
 
-df_precios <- df_precios[order(df_precios$precio_individual, decreasing = TRUE),]
+df_precios <- df_precios[order(df_precios$precio_individual, decreasing = TRUE),
+                         ]
+```
 
+```{r}
 # Ahora que ya tenemos la información que nos interesa ordenada, vamos a 
 # mostrarla con una gráfica.
 
@@ -342,19 +421,23 @@ grafica
 
 # Si queremos descargarnos el gráfico:
 
-ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
+# ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
 ```
 
 Como podemos observar en la gráfica, los cinco productos más caros son: el escalopín de salmón (9,90 €), el jamón de cebo ibérico (9,79 €), el aceite de oliva virgen extra (9,55 €), filete de rodaballo (9.35 €) y una porción de merluza de cabo (8,77 €). Estos resultados tienen sentido, ya que los productos mostrados son de alta calidad y de producción costosa. También podemos apreciar que se encuentran más o menos en el mismo intervalo de precio.
 
+## 2) ¿Qué productos se compran más?
 
+Para calcular los productos más vendidos a partir de los tickets de
+compra, primero vamos a contabilizar la cantidad de cada producto que se
+compró en cada ticket, lo que nos da un recuento de unidades para cada
+producto. Tras ello, sumaremos las unidades de cada producto a través de
+todos los tickets para obtener un total de unidades vendidas para cada
+producto. Finalmente, ordenamos los productos por el total de unidades
+vendidas para identificar los productos más vendidos. Es decir, aquellos
+productos con más unidades vendidas son los productos más vendidos.
 
-## ¿Qué productos se compran más?
-
-Para calcular los productos más vendidos a partir de los tickets de compra, primero vamos a contabilizar la cantidad de cada producto que se compró en cada ticket, lo que nos da un recuento de unidades para cada producto. Tras ello, sumaremos las unidades de cada producto a través de todos los tickets para obtener un total de unidades vendidas para cada producto. Finalmente, ordenamos los productos por el total de unidades vendidas para identificar los productos más vendidos. Es decir, aquellos productos con más unidades vendidas son los productos más vendidos.
-
-```{r, echo=FALSE, warning=FALSE}
-library(ggplot2)
+```{r, warning = FALSE}
 # Utilizamos la función que ya tenemos para obtener la lista de dataframes
 lista_df <- lista
 
@@ -364,12 +447,15 @@ todos_los_tickets <- do.call(rbind, lista_df)
 todos_los_tickets <- head(todos_los_tickets, -1)
 
 # Convertimos la columna 'unidades' a numérica
-todos_los_tickets$unidades <- as.numeric(as.character(todos_los_tickets$unidades))
+todos_los_tickets$unidades <- as.numeric(as.character(
+  todos_los_tickets$unidades))
 
-# Eliminamos las filas con NA (que son las filas que no se pudieron convertir a numérico)
+# Eliminamos las filas con NA (que son las filas que no se pudieron convertir
+#a numérico)
 todos_los_tickets <- todos_los_tickets[!is.na(todos_los_tickets$unidades), ]
 
-# A continuación, agrupamos los datos por producto y calculamos las unidades totales de cada producto
+# A continuación, agrupamos los datos por producto y calculamos las unidades 
+#totales de cada producto
 productos_por_unidades <- todos_los_tickets %>%
   group_by(producto) %>%
   summarise(
@@ -387,38 +473,126 @@ productos_por_unidades <- productos_por_unidades %>%
 productos_ordenados <- productos_por_unidades %>%
   arrange(desc(unidades_promedio_por_ticket))
 
-# Finalmente, podemos ver los productos que se compran más según la media de unidades por ticket
+# Finalmente, podemos ver los productos que se compran más según la media 
+#de unidades por ticket
 top_productos <- head(productos_ordenados)
 top_productos
 
 # Creamos un gráfico
-grafico <- ggplot(top_productos, aes(x = reorder(producto, -unidades_promedio_por_ticket), y = unidades_promedio_por_ticket)) +
-  geom_bar(stat = "identity", fill = "seagreen", width = 0.4) + # cambia el ancho de las barras a 0.5
+grafico <- ggplot(top_productos, aes(x = reorder(producto, 
+                                                 -unidades_promedio_por_ticket),
+                                     y = unidades_promedio_por_ticket)) +
+  geom_bar(stat = "identity", fill = "seagreen", width = 0.4) + 
+  # cambia el ancho de las barras a 0.5
   theme_minimal() + # usa un tema minimalista
   theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 6)) +
   ylim(0,2) +
-  labs(x = "Producto", y = "Unidades promedio por ticket", title = "Productos más comprados según la media de unidades por ticket")
+  labs(x = "Producto", y = "Unidades promedio por ticket", 
+       title = "Productos más comprados según la media de unidades por ticket")
 grafico
 
 #Si queremos descargarnos el gráfico
 #ggsave("productos_mas_comprados.jpeg", grafico, width = 10, height = 6.5)
 ```
-Como se puede observar en la gráfica, las bolsas de plástico son el producto más vendido. Con más de 1.1 bolsas de plástico compradas por ticket. Además productos como la chaparta cristal, el zumo fresco, la leche descnatada, la caracola al cacao o el queso a lonchas de cabra también son los más vendidos entre los tickets analizados.
 
-## ¿Cuántos productos se compran de media en una compra?
+Como se puede observar en la gráfica, las bolsas de plástico son el
+producto más vendido. Con más de 1.1 bolsas de plástico compradas por
+ticket. Además productos como la chaparta cristal, el zumo fresco, la
+leche descnatada, la caracola al cacao o el queso a lonchas de cabra
+también son los más vendidos entre los tickets analizados.
 
-Para saber la media de productos por tickets hemos contabilizado todos los productos y a esta cifra le hemos dividido el número total de tickets.
+## 3) ¿A qué hora del día hay más compras?
 
-```{r, echo = FALSE}
+```{r, warning = FALSE}
+# Seleccionar la columna "Horas" como factor
+
+compras_por_hora <- tidy_ticket %>% select(Horas = Horas)
+
+# Crear el gráfico de barras
+plot <- ggplot(data = compras_por_hora, aes(x = Horas)) +
+    geom_bar(fill = "lightgreen", color = "black") +
+    labs(title = "Horas con más compras", x = "Horas", y = "Frecuencia")
+plot
+
+ggsave("pregunta3.jpg", plot = plot, width = 8, height = 6, dpi = 300)
+
+```
+
+Como podemos observar las horas con más compras son las 17 de la tarde,
+que eso nos puede demostrar que la gente va de compras a la hora que
+acaba de trabajar.
+
+## 4) ¿Qué días hay más compras?
+
+```{r, warning = FALSE}
+compras_por_dia <- tidy_ticket %>% 
+  select(dia_semana = dia_semana)
+
+# Crear el gráfico de barras
+pregunta_5 <- ggplot(data = compras_por_dia, aes(x = dia_semana)) +
+    geom_bar(fill = "green", color = "black") +
+    labs(title = "Días con más compras", x = "Días", y = "Frecuencia")
+
+pregunta_5
+
+ggsave("pregunta5.jpg", plot = pregunta_5, width = 8, height = 6, dpi = 300)
+```
+
+Como podemos observar los días con más compras son los lunes, martes y
+sábado, que eso nos puede demostrar que la gente va de compras a
+comienzo de semana y los fines de semana.
+
+## 5) ¿Cuántos productos se compran de media en una compra?
+
+Para saber la media de productos por tickets hemos contabilizado todos
+los productos y a esta cifra le hemos dividido el número total de
+tickets.
+
+```{r, warning = FALSE}
 # Calculamos de la media de productos por ticket con dos decimales
 media_productos_por_ticket = round(sum(nrow(todos_los_tickets)) / num_tickets, 2)
 ```
-Observamos que se obtiene que la media de productos por ticket es de **`media_productos_por_ticket`**. Además sabemos que esto va relacionado con el precio de cada compra. Cuantos más productos compres, más cara saldrá la compra.
-# Como solo queremos mostrar los 5 primeros, los definimos en otro data frame.
-```{r}
-df_precios_plot <- head(df_precios, 5)
 
-grafica <- ggplot(df_precios_plot, aes(x = reorder(producto, precio_individual),
+Observamos que se obtiene que la media de productos por ticket es de
+\*\*media_productos_por_ticket\*\*. Además sabemos que esto va
+relacionado con el precio de cada compra. Cuantos más productos compres,
+más cara saldrá la compra.
+
+## 6) ¿Qué productos cambian de precio (por kg)?
+
+En este análisis, exploraremos cómo los precios de ciertos productos varían en función de su peso en las compras realizadas en Mercadona. Para ello, hemos desarrollado una función especializada que recorre el contenido de varios tickets almacenados en archivos de texto. Esta función está diseñada para identificar y extraer información sobre los productos vendidos por peso, capturando tanto el nombre del producto como su precio por kilogramo.
+
+```{r, warning = FALSE}
+extraer_productos_por_peso <- function(rutas_archivos) {
+  # Procesamos cada archivo de ticket proporcionado
+  for (ruta_archivo in rutas_archivos) {
+    # Leemos el contenido del archivo
+    lineas <- readLines(ruta_archivo)
+    
+    for (i in 2:length(lineas)) {
+      # Buscamos las líneas que contienen información de peso y precio por kg
+      if (grepl("kg", lineas[i]) && grepl("€/kg", lineas[i])) {
+        nombre_producto <- gsub("\\d+", "", lineas[i-1])  # Eliminar números
+        # para limpiar el nombre
+        nombre_producto <- trimws(nombre_producto)  # Eliminar espacios en 
+        # blanco sobrantes
+        
+        # Extraemos la información de peso y precio por kg
+        precio_por_kg_info <- regmatches(lineas[i], regexpr("\\d+,\\d+ €/kg",
+                                                            lineas[i]))
+        
+        descripcion_producto <- sprintf("%s %s", nombre_producto,
+                                        precio_por_kg_info)
+        
+        # Mostramos el nombre del producto y su precio por kg
+        print(descripcion_producto)
+      }
+    }
+  }
+}
+
+grafica <- ggplot(df_precios_plot, aes(x = reorder(producto, 
+                                                   precio_individual),
                                        y = precio_individual)) +
   geom_bar(stat = "identity", fill = "seagreen", width = 0.5) +
   labs(title = "Precios de los 5 productos más caros",
@@ -431,146 +605,27 @@ grafica
 
 # Si queremos descargarnos el gráfico:
 
-ggsave("graficas/top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
+# ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
 ```
 
- 
-## ¿Qué se compra más, comida o bebida? 
+En resumen, el análisis de los tickets de compra muestra que los precios de productos como plátanos, manzanas y otros vendidos por kilogramo en Mercadona son variables y pueden fluctuar ligeramente. Este comportamiento es común en productos frescos debido a las dinámicas del mercado y las condiciones de suministro, los consumidores deben ser conscientes de la naturaleza variable de los precios de los productos frescos y tomar decisiones informadas para optimizar sus compras.
 
-Vamos a analizar qué se compra más en general por compra: ¿comida o bebida?
- 
+## 7) ¿Qué tipo de IVA recauda más dinero?  
 
-```{r, echo = FALSE}
-# Definimos las categorías que queremos que aparezcan en los tickets de compra.
-
-categorias <- c("comida", "bebida", "otros")
-
-# Creamos una función para clasificar los productos en las diferentes categorías
-
-clasificar_productos <- function(df) {
-  df$categoria <- NA  # Inicializamos la columna de categoría como NA
-  
-  # Clasificación basada en el nombre del producto
-  
-  df$categoria <- ifelse(grepl("[A-Za-z]L$", df$producto), "bebida", 
-                         ifelse(grepl("comida|alimento|plato|ensalada", tolower(df$producto)), "comida", "otros"))
-  
-  return(df)
-}
-
-# Clasificamos los productos en la lista
-
-lista_con_categorias <- lapply(lista, clasificar_productos)
-
-# Creamos la función que va a añadir a cada fichero la columna categoría 
-# con cada producto clasificado.
-
-add_categoria <- function(lista){
-  for (i in 1:length(lista)){
-    lista[[i]] <- clasificar_productos(lista[[i]])
-  }
-  return(lista)
-}
-
-lista_con_categorias <- add_categoria(lista)
-```
-
-## ¿Cuál es el gasto medio de cada compra?
-
-Para obtener esta información, necesitamos analizar cada recibo que se pasa a la función. Para determinar el costo total de la compra, utilizamos las funciones "grep" y "sub", que permiten buscar el texto "TOTAL (€)" en cada línea y extraer el valor correspondiente al total de la compra.
-
-Una vez que hemos extraído los precios de todos los recibos, la función calcula la suma de estos valores y luego la divide por el número total de recibos analizados para obtener el promedio del gasto.
-
-Vamos a probar con un ejemplo usando tres tickets de diferentes precios:
-
-```{r, echo = FALSE}
-leer_precio_total <- function(nombres_archivos) {
-  precios_totales <- numeric(length(nombres_archivos)) # Vector para almacenar los precios totales
-  
-  for (i in seq_along(nombres_archivos)) {
-    nombre_archivo <- nombres_archivos[i]
-    lineas <- readLines(nombre_archivo)
-    linea_total <- grep("TOTAL \\(€\\)", lineas, value = TRUE)
-    
-    if (length(linea_total) > 0) {
-      precio_total <- sub(".*TOTAL \\(€\\) ([0-9]+,[0-9]+).*", "\\1", linea_total)
-      precios_totales[i] <- as.numeric(gsub(",", ".", precio_total))
-    } else {
-      precios_totales[i] <- NA
-    }
-  }
-  
-  if (all(is.na(precios_totales))) {
-    cat("No se pudo leer el precio total de ninguno de los archivos.\n")
-  } else {
-    cat("Precios total de cada ticket:\n")
-    print(precios_totales, na.rm = TRUE)
-    precio_medio <- mean(precios_totales, na.rm = TRUE)
-    cat(sprintf("Precio medio de los tickets: %.2f €\n", precio_medio))
-  }
-}
-
-# Usar la función para leer el precio total de múltiples archivos
-archivos <- c("data/20240127 Mercadona 108,33.txt", "data/20240129 Mercadona 79,82.txt", "data/20231216 Mercadona 46,19.txt")
-leer_precio_total(archivos)
-
-```
- 
-
-
-
-## ¿Qué productos cambian de precio (por kg)?
-
-En este análisis, exploraremos cómo los precios de ciertos productos varían en función de su peso en las compras realizadas en Mercadona. Para ello, hemos desarrollado una función especializada que recorre el contenido de varios tickets almacenados en archivos de texto. Esta función está diseñada para identificar y extraer información sobre los productos vendidos por peso, capturando tanto el nombre del producto como su precio por kilogramo. 
-
-```{r, echo = FALSE}
-extraer_productos_por_peso <- function(rutas_archivos) {
-  # Procesamos cada archivo de ticket proporcionado
-  for (ruta_archivo in rutas_archivos) {
-    # Leemos el contenido del archivo
-    lineas <- readLines(ruta_archivo)
-    
-    for (i in 2:length(lineas)) {
-      # Buscamos las líneas que contienen información de peso y precio por kg
-      if (grepl("kg", lineas[i]) && grepl("€/kg", lineas[i])) {
-        nombre_producto <- gsub("\\d+", "", lineas[i-1])  # Eliminar números para limpiar el nombre
-        nombre_producto <- trimws(nombre_producto)  # Eliminar espacios en blanco sobrantes
-        
-        # Extraemos la información de peso y precio por kg
-        precio_por_kg_info <- regmatches(lineas[i], regexpr("\\d+,\\d+ €/kg", lineas[i]))
-        
-        descripcion_producto <- sprintf("%s %s", nombre_producto, precio_por_kg_info)
-        
-        # Mostramos el nombre del producto y su precio por kg
-        print(descripcion_producto)
-      }
-    }
-  }
-}
-
-```
-
-```{r, echo = FALSE}
-rutas_tickets <- c("data/20240127 Mercadona 108,33.txt","data/20240115 Mercadona 117,41.txt", "data/20240105 Mercadona 63,19.txt")
-extraer_productos_por_peso(rutas_tickets)
-
-```
- 
- 
- 
-
-```{r, echo = FALSE, warning=FALSE} 
+```{r, warning = FALSE}
 dfIVA <- function(listaArchivos) {
     dfl <- list()   #lista vacía donde se almacenarán los dataframes resultantes
     
     for (archivo in listaArchivos) {
-        texto <- (readLines(archivo, encoding = "windows-1252"))#Extraigo la informacion de los txt
+        texto <- (readLines(archivo, encoding = "windows-1252"))#Extraigo la 
+        # informacion de los txt
         total1 <- texto[grep("^TOTAL \\(", texto)]
         indice1 <- grep("^IVA BASE", texto)
         indice2 <- grep("^TOTAL \\d", texto)#Obtengo las lineas que contienen el IVA 
         IVA <- texto[(indice1 + 1):(indice2 - 1)]
         IVA<- c(IVA,texto[indice2])#Creo un vector con la informacion
-        matrizIVA <- matrix(IVA, ncol = 5, byrow = TRUE)#Lo paso a matriz y le doy la forma adecuada para obtener el df que quiero
+        matrizIVA <- matrix(IVA, ncol = 5, byrow = TRUE)#Lo paso a matriz y le 
+        # doy la forma adecuada para obtener el df que quiero
  
         dfIVA <- as.data.frame(matrizIVA)
          
@@ -578,25 +633,33 @@ dfIVA <- function(listaArchivos) {
     }
      
     df_final<-bind_rows(dfl)#Uno todos los df en uno
-    df1 <- df_final %>%#Los datos no estan ordenados por columnas, creo nuevas columnas con la condicion de que cada una sea un tipo de IVA o el total
+    df1 <- df_final %>%#Los datos no estan ordenados por columnas, 
+      # creo nuevas columnas con la condicion de que cada una sea un tipo 
+      # de IVA o el total
   rowwise() %>%
   mutate(veintiuno = ifelse(any(startsWith(c_across(everything()), "21")), 
-                   first(c_across(everything())[startsWith(c_across(everything()), "21")]), 
+                   first(c_across(everything())[startsWith(c_across(everything()),
+                                                           "21")]), 
                    NA))%>%
     mutate(diez = ifelse(any(startsWith(c_across(everything()), "10")), 
-                   first(c_across(everything())[startsWith(c_across(everything()), "10")]), 
+                   first(c_across(everything())[startsWith(c_across(everything()),
+                                                           "10")]), 
                    NA))%>%
   mutate(cinco = ifelse(any(startsWith(c_across(everything()), "5")), 
-                   first(c_across(everything())[startsWith(c_across(everything()), "5")]), 
+                   first(c_across(everything())[startsWith(c_across(everything()),
+                                                           "5")]), 
                    NA))%>%
   mutate(cero = ifelse(any(startsWith(c_across(everything()), "0")), 
-                   first(c_across(everything())[startsWith(c_across(everything()), "0")]), 
+                   first(c_across(everything())[startsWith(c_across(everything()),
+                                                           "0")]), 
                    NA))%>%
   mutate(total = ifelse(any(startsWith(c_across(everything()), "TOTAL")), 
-                   first(c_across(everything())[startsWith(c_across(everything()), "TOTAL")]), 
+                   first(c_across(everything())[startsWith(c_across(everything()),
+                                                           "TOTAL")]), 
                    NA))
     
-  #Me quedo con las columnas nuevas y selecciono solo los caracteres que me interesan
+  #Me quedo con las columnas nuevas y selecciono solo los caracteres que 
+    #me interesan
   df <-df1%>%
   select(veintiuno,diez,cinco,cero,total)%>%
   mutate(base21=substr(veintiuno,5,8))%>%
@@ -604,102 +667,120 @@ dfIVA <- function(listaArchivos) {
   mutate(base5=substr(cinco,4,8))%>%
   mutate(base0=substr(cero,4,8))%>%
   mutate(totalBase=substr(total,6,(nchar(total)-4)))%>%
-  mutate(imponible21=substr(veintiuno,(nchar(veintiuno)-4),nchar(veintiuno)))%>%
+  mutate(imponible21=substr(veintiuno,(nchar(veintiuno)-4),
+                            nchar(veintiuno)))%>%
   mutate(imponible10=substr(diez,(nchar(diez)-4),nchar(diez)))%>%
   mutate(imponible5=substr(cinco,(nchar(cinco)-4),nchar(cinco)))%>%
   mutate(imponible0=substr(cero,(nchar(cero)-4),nchar(cero)))%>%
   mutate(totalImponible=substr(total,(nchar(total)-4),nchar(total)))%>%
-      select(base21,base10,base5,base0,imponible21,imponible10,imponible5,imponible0,totalBase,totalImponible) %>%
-  mutate_all(~ str_replace_all(., ",", "."))%>%#Reenplazo comas por puntos y paso a numerico
+      select(base21,base10,base5,base0,imponible21,imponible10,imponible5,
+             imponible0,totalBase,totalImponible) %>%
+  mutate_all(~ str_replace_all(., ",", "."))%>%#Reenplazo comas por puntos 
+    # y paso a numerico
    mutate_all(as.numeric)
     
     return(df)
 }
 carpeta <- "data"
-fichero<-list.files(path = carpeta, full.names = TRUE, recursive = TRUE, pattern = ".txt")
+fichero<-list.files(path = carpeta, full.names = TRUE, recursive = TRUE,
+                    pattern = ".txt")
 
 a<-dfIVA(fichero)
-
- 
 ```
 
+En españa el IVA se divide en tres tipos, general (20%), reducido (10%) y
+superreducido (5%); también tenemos en cuenta otro tipo, el 0%; es decir, los productos a los que no se les aplica IVA.
 
-En españa el IVA se divide en tres tipos, general(20%), reducido(10%) y superreducido(5%) tambien estoy teniendo en cuenta como otro tipo el 0%, es decir, los productos a los que no se les aplica IVA.
-Para empezar a estudiar los datos en boxplot puede ser muy util ya que sirve para hacerse una idea de los valores y detectar posibles outliers.
+Para empezar a estudiar los datos en boxplot, puede ser muy útil ya que
+sirve para hacerse una idea de los valores y detectar posibles outliers.
 
-
-En este grafico se nota que el IVA reducido es el que tiene un rango de valores mas amplio, y tambien se pueden observar unas pocas observaciones atípicas, pero no me centraré en estudiarlas porque no influyen demasiado en los siguientes gráficos y no son outliers, simplemente compras en las que se ha gastado un poco mas de dinero que el promedio.
+En este gráfico se nota que el IVA reducido es el que tiene un rango de
+valores más amplio, y también se pueden observar unas pocas
+observaciones atípicas, pero nos centraremos en estudiarlas porque no
+influyen demasiado en los siguientes gráficos y no son outliers,
+simplemente compras en las que se ha gastado un poco más de dinero que
+el promedio.
 
 ```{r, echo = FALSE}
+df_long <- gather(a, key = "Variable", value = "Valor")
+#Modelo el df en dos columnas para adecuarlo al plot
 
-
-df_long <- gather(a, key = "Variable", value = "Valor")#Modelo el df en dos columnas para adecuarlo al plot
-
-ggplot(df_long, aes(x = Variable, y = Valor)) +
+boxplot_variables <- ggplot(df_long, aes(x = Variable, y = Valor)) +
   geom_boxplot(fill="seagreen") +
   labs(title = "Boxplot de cada Variable", x = "Tipo IVA", y = "Valores")+ 
   theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 9))
 
-ggsave("top_5_productos_mas_caros.jpeg", grafica, width = 10, height = 6.5)
+# ggsave("boxplot_variables.jpeg", boxplot_variables, width = 10, height = 6.5) 
 ```
 
+En la siguiente gráfica se puede observar el precio total al que se le aplica cada tipo de IVA, es decir, de los 1598.87 euros, que es la suma del precio de todos los tickets, se puede ver como principalmente se aplica el IVA reducido (10%).
 
-
-
-En la siguiente grafica se puede observar el precio total al que se le aplica cada tipo de IVA, es decir, de los 1598.87 euros, que es la suma del precio de todos los tickets, se puede ver como principalmente se aplica el IVA reducido(10%)
 ```{r, echo = FALSE}
-
-graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$base0, na.rm = T),sum(a$base5, na.rm = T),sum(a$base10, na.rm = T),sum(a$base21, na.rm = T)))  #Creo un df con los datos que me interesan
-graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))#Paso esta columna a factor para que salga ordenada
+graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$base0, na.rm = T),sum(a$base5, na.rm = T),sum(a$base10, na.rm = T),sum(a$base21, na.rm = T)))  
+#Creo un df con los datos que me interesan
+graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))#Paso esta
+# columna a factor para que salga ordenada
 IVA1<-ggplot(graf, aes(x = tipo, y = cantidad)) +
   geom_bar(stat = "identity",fill="seagreen") +
-  labs(x = "Tipo", y = "Cantidad", title = "Precio del total al que se le aplica cada tipo de IVA")
+  labs(x = "Tipo", y = "Cantidad", 
+       title = "Precio del total al que se le aplica cada tipo de IVA")
 print(sum(a$totalBase))
+IVA1
 
+# Guardamos el gráfico
 
-ggsave("graficas/IVA_total.jpeg", IVA1, width = 10, height = 6.5)#Guardo el grafico
+# ggsave("graficas/IVA_total.jpeg", IVA1, width = 10, height = 6.5) 
 ```
 
-
-
-
-Para continuar, en esta grafica se puede observar el total imponible de cada tipo de IVA, es decir, de todo el dinero gastado 127.56 euros se han cobrado por el IVA y la mayoria de dinero se ha recaudado por el IVA reducido(10%)
-
+Para continuar, en esta gráfica se puede observar el total imponible de cada tipo de IVA, es decir, de todo el dinero gastado 127.56 euros se han cobrado por el IVA y la mayoría de dinero se ha recaudado por el IVA reducido (10%).
 
 ```{r, echo = FALSE}
-graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$imponible0, na.rm = T),sum(a$imponible5, na.rm = T),sum(a$imponible10, na.rm = T),sum(a$imponible21, na.rm = T)))  #Creo un df con los datos que me interesan
-graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))#Paso esta columna a factor para que salga ordenada
+graf<-data.frame(tipo=c("0%","5%","10%","20%"),cantidad=c(sum(a$imponible0,
+                                                              na.rm = T),
+                                                          sum(a$imponible5,
+                                                              na.rm = T),
+                                                          sum(a$imponible10,
+                                                              na.rm = T),
+                                                          sum(a$imponible21,
+                                                              na.rm = T)))  
+#Creo un df con los datos que me interesan
+graf$tipo <- factor(graf$tipo, levels = c("0%", "5%", "10%", "20%"))
+#Paso esta columna a factor para que salga ordenada
 IVA2<-ggplot(graf, aes(x = tipo, y = cantidad)) +
   geom_bar(stat = "identity", fill = "seagreen") +
   labs(x = "Tipo", y = "Precio", title = "Cantidad imponible por tipo")
 print(sum(a$totalImponible))
+IVA2
 
-
-ggsave("graficas/IVA_Imponible.jpeg", IVA2, width = 10, height = 6.5)
+# ggsave("graficas/IVA_Imponible.jpeg", IVA2, width = 10, height = 6.5)
 ```
 
-
-
-
-
-Para terminar, la siguiente grafica muestra la media de cada tipo de IVA tanto el total, como la parte imponible.
+Para terminar, la siguiente gráfica muestra la media de cada tipo de IVA tanto el total, como la parte imponible.
 
 ```{r, echo = FALSE}
 medias<-a %>%group_by()%>% 
-  summarise("Total 21%"= mean(base21, na.rm = TRUE),"Total 10%"= mean(base10, na.rm = TRUE),"Total 5%"= mean(base5, na.rm = TRUE),"Total 0%"= mean(base0, na.rm = TRUE),"General(20)"= mean(imponible21, na.rm = TRUE),"reducido(10)"= mean(imponible10, na.rm = TRUE),"superreducido(5)"= mean(imponible5, na.rm = TRUE))
-mediasl <- gather(medias, key = "Variable", value = "Valor")#Obtengo las medias y las agrupo en dos columnas
-mediasl$Variable <- factor(mediasl$Variable, levels = mediasl$Variable)#Paso  columna a factor para que salga ordenada
-mediasl$Categoria <- ifelse(mediasl$Variable %in% c("Total 20%", "Total 10%", "Total 5%", "Total 0%"), "Total", "Imponible")#Creo una nueva variable para distinguir el IVA base del imponible
+  summarise("Total 20%"= mean(base21, na.rm = TRUE),
+            "Total 10%"= mean(base10, na.rm = TRUE),
+            "Total 5%"= mean(base5, na.rm = TRUE),
+            "Total 0%"= mean(base0, na.rm = TRUE),
+            "General(20)"= mean(imponible21, na.rm = TRUE),
+            "reducido(10)"= mean(imponible10, na.rm = TRUE),
+            "superreducido(5)"= mean(imponible5, na.rm = TRUE))
+mediasl <- gather(medias, key = "Variable", value = "Valor")
+#Obtengo las medias y las agrupo en dos columnas
+mediasl$Variable <- factor(mediasl$Variable, levels = mediasl$Variable)
+#Paso  columna a factor para que salga ordenada
+mediasl$Categoria <- ifelse(mediasl$Variable %in% c("Total 20%", "Total 10%",
+                                                    "Total 5%", "Total 0%"),
+                            "Total", "Imponible") 
+#Creo una nueva variable para distinguir el IVA base del imponible
+
 mediaIVA<-ggplot(mediasl, aes(x = Variable, y = Valor, fill = Categoria)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values = c("Total" = "#CC6666", "Imponible" = "#66CCCC")) +
   labs(title = "Media del IVA", x = "Precio", y = "Tipo de IVA")+ 
   theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 9))
- 
+mediaIVA
 
-ggsave("graficas/mediaIVA.jpeg", mediaIVA, width = 10, height = 6.5)
- 
+# ggsave("graficas/mediaIVA.jpeg", mediaIVA, width = 10, height = 6.5)
 ```
-
-
- 
